@@ -117,28 +117,89 @@ Buka browser: **http://localhost:8001**
 
 ---
 
-## 🔑 Login Default
+## 🔑 Login & Sinkronisasi Akun
 
-Buat akun admin pertama melalui database atau dengan menambahkan seeder. Akun user disimpan di tabel `users` dengan:
+### Cara Kerja Autentikasi
 
-| Field | Keterangan |
-|---|---|
-| `email` | Email login |
-| `password` | Password (bcrypt) |
-| `school_id` | ID sekolah (foreign key ke tabel `schools`) |
-| `role` | `admin` atau `superadmin` |
+E-Perpus **tidak punya manajemen user sendiri**. Akun login disinkronkan dari **database Sistem Absensi** (`ABSEN_DB_*` di `.env`). 
 
-Contoh insert manual via MySQL:
+**Username dan password E-Perpus = sama persis dengan Sistem Absensi.**
 
-```sql
-INSERT INTO schools (id, name, created_at, updated_at)
-VALUES (1, 'SMKN 1 Contoh', NOW(), NOW());
+Yang disinkronkan: semua user dengan role `admin`, `teacher`, atau `super_admin` dari database absensi.
 
-INSERT INTO users (name, email, password, school_id, role, created_at, updated_at)
-VALUES ('Admin', 'admin@eperpus.com', '$2y$12$...', 1, 'admin', NOW(), NOW());
+---
+
+### ⚠️ Masalah Bootstrap Awal (Chicken-and-Egg)
+
+Saat fresh install, belum ada user di database E-Perpus. Sync butuh login, tapi login butuh sync dulu. Solusinya: **jalankan sync manual via Artisan Tinker**.
+
+### Langkah Setup Akun Pertama
+
+**Step 1** — Pastikan `.env` sudah dikonfigurasi dan database absensi bisa diakses.
+
+**Step 2** — Jalankan sync lewat tinker:
+
+```bash
+php artisan tinker
 ```
 
-> Gunakan `php artisan tinker` dan `Hash::make('password123')` untuk generate password.
+```php
+// Di dalam tinker, jalankan:
+app(App\Services\AttendanceSyncService::class)->syncAll();
+```
+
+Perintah ini akan menyalin:
+- ✅ Data **sekolah** dari db absensi
+- ✅ Data **user** (admin/teacher/super_admin) beserta `password_hash`-nya
+- ✅ Data **siswa & guru** sebagai anggota perpustakaan
+
+**Step 3** — Sekarang login dengan kredensial Sistem Absensi Anda:
+
+| Field Login | Nilai |
+|---|---|
+| Username / Email | Username atau email yang dipakai di Sistem Absensi |
+| Password | Password yang sama dengan Sistem Absensi |
+
+---
+
+### Sync Berikutnya (Setelah Bisa Login)
+
+Setelah berhasil login pertama kali, sync berikutnya bisa dilakukan dari Dashboard:
+
+1. Buka halaman **Dashboard**
+2. Klik tombol **🔄 Sinkronisasi Data**
+3. Data anggota, user, dan sekolah akan diperbarui otomatis
+
+---
+
+### Jika Tidak Punya Sistem Absensi (Standalone)
+
+Jika ingin membuat akun admin manual tanpa sinkronisasi:
+
+```bash
+php artisan tinker
+```
+
+```php
+use App\Models\School;
+use App\Models\User;
+use Illuminate\Support\Facades\Hash;
+
+// Buat sekolah dulu
+School::create(['id' => 1, 'name' => 'Nama Sekolah Anda']);
+
+// Buat user admin
+User::create([
+    'full_name'     => 'Administrator',
+    'username'      => 'admin',
+    'email'         => 'admin@eperpus.com',
+    'password_hash' => Hash::make('password123'),
+    'role'          => 'admin',
+    'school_id'     => 1,
+]);
+```
+
+Login dengan: **username** `admin` / **password** `password123`
 
 ---
 
