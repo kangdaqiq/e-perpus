@@ -19,27 +19,40 @@ class UserFactory extends Factory
 
     /**
      * Define the model's default state.
+     * Menggunakan kolom yang sesuai dengan skema tabel users E-Perpus.
      *
      * @return array<string, mixed>
      */
     public function definition(): array
     {
         return [
-            'name' => fake()->name(),
-            'email' => fake()->unique()->safeEmail(),
-            'email_verified_at' => now(),
-            'password' => static::$password ??= Hash::make('password'),
+            'full_name'     => fake()->name(),
+            'username'      => fake()->unique()->userName(),
+            'email'         => fake()->unique()->safeEmail(),
+            'password_hash' => static::$password ??= Hash::make('password'),
+            'role'          => 'teacher',
+            'school_id'     => null,
             'remember_token' => Str::random(10),
         ];
     }
 
     /**
-     * Indicate that the model's email address should be unverified.
+     * Jadikan user sebagai admin.
      */
-    public function unverified(): static
+    public function admin(): static
     {
         return $this->state(fn (array $attributes) => [
-            'email_verified_at' => null,
+            'role' => 'admin',
+        ]);
+    }
+
+    /**
+     * Jadikan user sebagai super_admin.
+     */
+    public function superAdmin(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'role' => 'super_admin',
         ]);
     }
 }
