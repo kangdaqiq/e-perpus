@@ -65,19 +65,20 @@ return [
         ],
 
         'mysql_absensi' => [
-            'driver' => 'mysql',
-            'host' => env('DB_ABSENSI_HOST', '127.0.0.1'),
-            'port' => env('DB_ABSENSI_PORT', '3306'),
-            'database' => env('DB_ABSENSI_DATABASE', 'absen_sell'),
-            'username' => env('DB_ABSENSI_USERNAME', 'root'),
-            'password' => env('DB_ABSENSI_PASSWORD', ''),
-            'charset' => env('DB_CHARSET', 'utf8mb4'),
-            'collation' => env('DB_COLLATION', 'utf8mb4_unicode_ci'),
-            'prefix' => '',
+            'driver'      => 'mysql',
+            'host'        => env('ABSEN_DB_HOST', '127.0.0.1'),
+            'port'        => env('ABSEN_DB_PORT', '3306'),
+            'database'    => env('ABSEN_DB_DATABASE', 'absen_sell'),
+            'username'    => env('ABSEN_DB_USERNAME', 'root'),
+            'password'    => env('ABSEN_DB_PASSWORD', ''),
+            'charset'     => env('DB_CHARSET', 'utf8mb4'),
+            'collation'   => env('DB_COLLATION', 'utf8mb4_unicode_ci'),
+            'prefix'      => '',
             'prefix_indexes' => true,
-            'strict' => true,
-            'engine' => null,
+            'strict'      => true,
+            'engine'      => null,
         ],
+
 
         'mariadb' => [
             'driver' => 'mariadb',
