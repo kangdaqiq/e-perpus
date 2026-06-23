@@ -131,7 +131,7 @@
                 <h3 class="font-bold text-lg">Tambah Buku Baru</h3>
                 <button @click="openAddModal = false" class="text-slate-400 hover:text-slate-500"><i class="fa-solid fa-xmark"></i></button>
             </div>
-            <form action="{{ route('perpus.buku.store') }}" method="POST" enctype="multipart/form-tambah" class="p-6 space-y-4">
+            <form action="{{ route('perpus.buku.store') }}" method="POST" enctype="multipart/form-data" class="p-6 space-y-4">
                 @csrf
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
@@ -192,7 +192,7 @@
                 <h3 class="font-bold text-lg">Edit Buku</h3>
                 <button @click="openEditModal = false" class="text-slate-400 hover:text-slate-500"><i class="fa-solid fa-xmark"></i></button>
             </div>
-            <form :action="`/books/${editBook.id}`" method="POST" enctype="multipart/form-edit" class="p-6 space-y-4">
+            <form :action="`/books/${editBook.id}`" method="POST" enctype="multipart/form-data" class="p-6 space-y-4">
                 @csrf
                 @method('PUT')
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
