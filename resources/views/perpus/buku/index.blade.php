@@ -293,13 +293,12 @@
                     <button type="button" @click="inputMode = 'manual'" 
                             class="flex-1 py-2.5 text-xs font-bold rounded-xl transition-all"
                             :class="inputMode === 'manual' ? 'bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-sm' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'">
-                        <i class="fa-solid fa-keyboard mr-1.5"></i> Input Manual (RFID Rusak)
+                        <i class="fa-solid fa-keyboard mr-1.5"></i> Input Manual
                     </button>
                 </div>
 
                 <!-- RFID MODE OPTIONS -->
                 <div x-show="inputMode === 'rfid'" class="space-y-4">
-                    <p class="text-xs text-slate-400">Pilih perangkat scanner RFID peminjaman di meja Anda:</p>
                     <div>
                         <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Pilih Perangkat RFID</label>
                         <select x-model="deviceId" required
@@ -310,7 +309,7 @@
                             @endforeach
                         </select>
                         @if(count($devices) === 0)
-                            <p class="text-xs text-rose-500 font-semibold mt-2">Peringatan: Belum ada device tipe 'rfid_perpus_pinjam' yang aktif.</p>
+                            <p class="text-xs text-rose-500 font-semibold mt-2">Peringatan: Belum ada device yang aktif.</p>
                         @endif
                     </div>
                 </div>
