@@ -37,16 +37,7 @@
         </div>
     </div>
 
-    <!-- Alert info konfigurasi -->
-    <div class="mb-6 p-5 bg-indigo-50 dark:bg-indigo-950/20 border border-indigo-100 dark:border-indigo-900 rounded-3xl text-sm flex items-start gap-4 leading-relaxed">
-        <div class="w-10 h-10 bg-indigo-100 dark:bg-indigo-900/50 rounded-xl flex items-center justify-center text-indigo-600 dark:text-indigo-400 text-lg flex-shrink-0">
-            <i class="fa-solid fa-circle-info"></i>
-        </div>
-        <div>
-            <h4 class="font-bold text-slate-800 dark:text-slate-200">Cara Menghubungkan Alat Scanner RFID:</h4>
-            <p class="text-slate-600 dark:text-slate-400 mt-1">Salin **API Key** dari alat yang terdaftar di bawah ini, kemudian masukkan ke halaman konfigurasi IP scanner RFID Anda (`http://<IP-Alat>`) pada input **API Key** dan set **API Server URL** ke `http://<IP-PC-Server-Anda>:8001`.</p>
-        </div>
-    </div>
+
 
     <!-- Data Table -->
     <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl overflow-hidden shadow-sm">
