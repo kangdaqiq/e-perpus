@@ -310,17 +310,19 @@ class LoanController extends Controller
             return response()->json(['success' => false, 'message' => 'Anggota tidak valid.'], 403);
         }
 
-        // VALIDASI: Apakah anggota sudah tap kunjungan hari ini?
+        // Apakah anggota sudah tap kunjungan hari ini? Jika belum, otomatis buat kunjungan baru.
         $hasVisitToday = Visit::where('member_id', $member->id)
             ->where('school_id', $schoolId)
             ->whereDate('scanned_at', today())
             ->exists();
 
         if (!$hasVisitToday) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Anggota belum melakukan tap kunjungan hari ini (Belum tercatat di Buku Tamu Kunjungan).'
-            ], 422);
+            Visit::create([
+                'school_id' => $schoolId,
+                'member_id' => $member->id,
+                'purpose' => 'Membaca / Meminjam Buku (Auto)',
+                'scanned_at' => now()
+            ]);
         }
 
         $createdLoans = [];

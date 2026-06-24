@@ -135,21 +135,18 @@ class RfidController extends Controller
         $isReturnLookup = isset($txData['type']) && $txData['type'] === 'return_lookup';
 
         if (!$isReturnLookup) {
-            // VALIDASI: Apakah anggota sudah tap kunjungan hari ini?
+            // Apakah anggota sudah tap kunjungan hari ini? Jika belum, otomatis buat kunjungan baru.
             $hasVisitToday = Visit::where('member_id', $member->id)
                 ->where('school_id', $device->school_id)
                 ->whereDate('scanned_at', today())
                 ->exists();
 
             if (!$hasVisitToday) {
-                $pending->update([
-                    'status' => 'failed',
-                    'error_message' => 'Belum Tap Kunjungan'
-                ]);
-                return response()->json([
-                    'ok' => false,
-                    'message' => 'Belum Tap Kunjungan',
-                    'type' => 'error'
+                Visit::create([
+                    'school_id' => $device->school_id,
+                    'member_id' => $member->id,
+                    'purpose' => 'Membaca / Meminjam Buku (Auto)',
+                    'scanned_at' => now()
                 ]);
             }
         }
