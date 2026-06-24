@@ -290,8 +290,10 @@ class LoanController extends Controller
 
         $request->validate([
             'return_date' => 'required|date',
+            'return_qty' => 'required|integer|min:1|max:' . $loan->qty,
         ]);
 
+        $returnQty = (int)$request->input('return_qty');
         $returnDate = Carbon::parse($request->return_date)->startOfDay();
         $dueDate = Carbon::parse($loan->due_date)->startOfDay();
         
@@ -302,19 +304,45 @@ class LoanController extends Controller
             $fine = $daysLate * 1000.00;
         }
 
-        // Simpan data pengembalian
-        $loan->update([
-            'return_date' => $returnDate->format('Y-m-d'),
-            'status' => 'kembali',
-            'fine' => $fine
-        ]);
+        if ($returnQty < $loan->qty) {
+            // Parsial: buat peminjaman baru dengan status kembali untuk melacak buku yang dikembalikan
+            Loan::create([
+                'school_id' => $loan->school_id,
+                'member_id' => $loan->member_id,
+                'book_id' => $loan->book_id,
+                'borrow_date' => $loan->borrow_date,
+                'due_date' => $loan->due_date,
+                'return_date' => $returnDate->format('Y-m-d'),
+                'status' => 'kembali',
+                'fine' => $fine,
+                'qty' => $returnQty
+            ]);
 
-        // Tambah sisa stok buku kembali
-        $loan->book->increment('sisa_stok', $loan->qty ?? 1);
+            // Kurangi qty di peminjaman lama
+            $loan->decrement('qty', $returnQty);
 
-        $msg = 'Buku berhasil dikembalikan.';
-        if ($fine > 0) {
-            $msg .= ' Terlambat ' . $returnDate->diffInDays($dueDate) . ' hari. Denda: Rp ' . number_format($fine, 0, ',', '.');
+            // Tambah sisa stok buku kembali
+            $loan->book->increment('sisa_stok', $returnQty);
+
+            $msg = "Sebanyak {$returnQty} buku berhasil dikembalikan. Sisa " . $loan->qty . " buku masih dipinjam.";
+            if ($fine > 0) {
+                $msg .= ' Terlambat ' . $returnDate->diffInDays($dueDate) . ' hari. Denda: Rp ' . number_format($fine, 0, ',', '.');
+            }
+        } else {
+            // Pengembalian penuh
+            $loan->update([
+                'return_date' => $returnDate->format('Y-m-d'),
+                'status' => 'kembali',
+                'fine' => $fine
+            ]);
+
+            // Tambah sisa stok buku kembali
+            $loan->book->increment('sisa_stok', $returnQty);
+
+            $msg = 'Buku berhasil dikembalikan seluruhnya.';
+            if ($fine > 0) {
+                $msg .= ' Terlambat ' . $returnDate->diffInDays($dueDate) . ' hari. Denda: Rp ' . number_format($fine, 0, ',', '.');
+            }
         }
 
         return redirect()->route('perpus.loan.index')->with('success', $msg);

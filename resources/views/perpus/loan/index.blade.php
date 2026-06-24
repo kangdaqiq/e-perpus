@@ -342,6 +342,14 @@
                                class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl text-sm focus:outline-none focus:border-indigo-600 transition-colors">
                     </div>
 
+                    <!-- Input return_qty -->
+                    <div class="space-y-2">
+                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider">Jumlah Buku yang Dikembalikan</label>
+                        <input type="number" name="return_qty" x-model="returnQty" min="1" :max="selectedLoan.qty" required
+                               class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl text-sm focus:outline-none focus:border-indigo-600 transition-colors">
+                        <p class="text-[10px] text-slate-400 mt-1">Maksimal pengembalian: <span class="font-bold text-slate-600 dark:text-slate-350" x-text="selectedLoan.qty"></span> buku.</p>
+                    </div>
+
                     <!-- Fine Calculation Preview Box -->
                     <div class="mt-2">
                         <!-- Overdue Fine -->
@@ -385,8 +393,9 @@
 document.addEventListener('alpine:init', () => {
     Alpine.data('loanTransactions', () => ({
         openReturnModal: false,
-        selectedLoan: { id: null, member_name: '', book_title: '', borrow_date: '', due_date: '' },
+        selectedLoan: { id: null, member_name: '', book_title: '', borrow_date: '', due_date: '', qty: 1 },
         returnDate: new Date().toISOString().split('T')[0],
+        returnQty: 1,
 
         // Return Scan (RFID Quick Return)
         openReturnScanModal: false,
@@ -403,6 +412,7 @@ document.addEventListener('alpine:init', () => {
         triggerReturn(loan) {
             this.selectedLoan = { ...loan };
             this.returnDate = new Date().toISOString().split('T')[0];
+            this.returnQty = loan.qty || 1;
             this.openReturnModal = true;
         },
 
