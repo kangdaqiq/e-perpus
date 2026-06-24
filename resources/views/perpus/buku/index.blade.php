@@ -669,6 +669,15 @@ document.addEventListener('alpine:init', () => {
         },
 
         startVerification() {
+            const quantity = parseInt(this.qty);
+            if (isNaN(quantity) || quantity < 1) {
+                alert('Jumlah pinjam minimal adalah 1 buku.');
+                return;
+            }
+            if (quantity > this.loanBook.sisa_stok) {
+                alert('Jumlah pinjam tidak boleh melebihi sisa stok yang tersedia (' + this.loanBook.sisa_stok + ').');
+                return;
+            }
             if (!this.deviceId) {
                 alert('Silakan pilih perangkat scanner RFID.');
                 return;
@@ -721,6 +730,15 @@ document.addEventListener('alpine:init', () => {
         },
 
         submitManual() {
+            const quantity = parseInt(this.qty);
+            if (isNaN(quantity) || quantity < 1) {
+                alert('Jumlah pinjam minimal adalah 1 buku.');
+                return;
+            }
+            if (quantity > this.loanBook.sisa_stok) {
+                alert('Jumlah pinjam tidak boleh melebihi sisa stok yang tersedia (' + this.loanBook.sisa_stok + ').');
+                return;
+            }
             if (!this.selectedMemberId) {
                 alert('Silakan pilih anggota perpustakaan.');
                 return;
