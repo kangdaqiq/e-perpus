@@ -78,7 +78,7 @@
                             </td>
                             <td class="p-6 max-w-xs">
                                 <div class="font-semibold text-slate-800 dark:text-slate-200 truncate">{{ $loan->book->title }}</div>
-                                <div class="text-xs text-slate-400">ISBN: {{ $loan->book->code }}</div>
+                                <div class="text-xs text-slate-400">ISBN: {{ $loan->book->code }} • Qty: <span class="font-bold text-slate-700 dark:text-slate-350">{{ $loan->qty ?? 1 }}</span></div>
                             </td>
                             <td class="p-6 text-slate-500 font-medium">{{ $loan->borrow_date->format('d M Y') }}</td>
                             <td class="p-6 text-slate-500 font-medium">{{ $loan->due_date->format('d M Y') }}</td>
@@ -115,7 +115,8 @@
                                                 member_name: '{{ addslashes($loan->member->name) }}', 
                                                 book_title: '{{ addslashes($loan->book->title) }}', 
                                                 borrow_date: '{{ $loan->borrow_date->format('Y-m-d') }}', 
-                                                due_date: '{{ $loan->due_date->format('Y-m-d') }}' 
+                                                due_date: '{{ $loan->due_date->format('Y-m-d') }}',
+                                                qty: {{ $loan->qty ?? 1 }}
                                             })" 
                                             class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-md shadow-emerald-600/10 transition-all flex items-center gap-1.5 ml-auto">
                                         <i class="fa-solid fa-circle-check"></i>
@@ -234,7 +235,7 @@
                     <template x-for="loan in returnScanLoans" :key="loan.id">
                         <div class="p-4 bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-900 rounded-2xl flex justify-between items-center gap-4 transition-all hover:border-slate-200 dark:hover:border-slate-800">
                             <div class="min-w-0">
-                                <h5 class="font-bold text-slate-800 dark:text-slate-100 text-xs truncate" x-text="loan.book_title"></h5>
+                                <h5 class="font-bold text-slate-800 dark:text-slate-100 text-xs truncate" x-text="loan.book_title + ' (Qty: ' + (loan.qty || 1) + ')'"></h5>
                                 <p class="text-[10px] text-slate-400 mt-1">
                                     Pinjam: <span x-text="formatDate(loan.borrow_date)"></span> • Batas: <span x-text="formatDate(loan.due_date)" class="text-rose-500 font-semibold"></span>
                                 </p>
@@ -316,7 +317,7 @@
                     <div class="p-4 bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-900 rounded-2xl space-y-3">
                         <div>
                             <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Buku</span>
-                            <span class="text-sm font-bold text-slate-800 dark:text-slate-200" x-text="selectedLoan.book_title"></span>
+                            <span class="text-sm font-bold text-slate-800 dark:text-slate-200" x-text="selectedLoan.book_title + ' (Qty: ' + (selectedLoan.qty || 1) + ')'"></span>
                         </div>
                         <div>
                             <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Peminjam</span>

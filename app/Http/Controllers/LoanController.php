@@ -25,6 +25,15 @@ class LoanController extends Controller
             // Silence
         }
 
+        // Auto-fix loans table if 'qty' column is missing
+        try {
+            if (!\Illuminate\Support\Facades\Schema::hasColumn('loans', 'qty')) {
+                \Illuminate\Support\Facades\DB::statement("ALTER TABLE loans ADD COLUMN qty INT DEFAULT 1 AFTER fine");
+            }
+        } catch (\Exception $e) {
+            // Silence
+        }
+
         $schoolId = auth()->user()->school_id;
         $search = $request->input('search');
         $status = $request->input('status');
@@ -82,7 +91,16 @@ class LoanController extends Controller
             'book_ids' => 'required|array|min:1',
             'book_ids.*' => 'exists:books,id',
             'device_id' => 'required|exists:devices,id',
+            'qty' => 'nullable|integer|min:1',
         ]);
+
+        $qty = $request->input('qty', 1);
+        if (count($request->book_ids) > 0) {
+            $firstBook = Book::find($request->book_ids[0]);
+            if ($firstBook && $firstBook->sisa_stok < $qty) {
+                return response()->json(['success' => false, 'message' => 'Stok buku tidak mencukupi.'], 422);
+            }
+        }
 
         $device = Device::findOrFail($request->device_id);
         if ($device->school_id !== $schoolId) {
@@ -98,6 +116,7 @@ class LoanController extends Controller
             'device_id' => $device->id,
             'transaction_data' => [
                 'book_ids' => $request->book_ids,
+                'qty' => $qty,
                 'borrow_date' => Carbon::now()->format('Y-m-d'),
                 'due_date' => Carbon::now()->addDays(7)->format('Y-m-d'), // Default 7 hari pinjam
             ],
@@ -187,6 +206,15 @@ class LoanController extends Controller
             // Silence
         }
 
+        // Auto-fix loans table if 'qty' column is missing
+        try {
+            if (!\Illuminate\Support\Facades\Schema::hasColumn('loans', 'qty')) {
+                \Illuminate\Support\Facades\DB::statement("ALTER TABLE loans ADD COLUMN qty INT DEFAULT 1 AFTER fine");
+            }
+        } catch (\Exception $e) {
+            // Silence
+        }
+
         $schoolId = auth()->user()->school_id;
 
         $request->validate([
@@ -213,11 +241,12 @@ class LoanController extends Controller
         }
 
         $txData = $pending->transaction_data;
+        $qty = $txData['qty'] ?? 1;
         $createdLoans = [];
 
         foreach ($txData['book_ids'] as $bookId) {
             $book = Book::find($bookId);
-            if ($book && $book->sisa_stok > 0) {
+            if ($book && $book->sisa_stok >= $qty) {
                 $loan = Loan::create([
                     'school_id' => $schoolId,
                     'member_id' => $member->id,
@@ -225,10 +254,11 @@ class LoanController extends Controller
                     'borrow_date' => Carbon::parse($request->borrow_date)->format('Y-m-d'),
                     'due_date' => Carbon::parse($request->due_date)->format('Y-m-d'),
                     'status' => 'dipinjam',
-                    'fine' => 0.00
+                    'fine' => 0.00,
+                    'qty' => $qty
                 ]);
 
-                $book->decrement('sisa_stok');
+                $book->decrement('sisa_stok', $qty);
                 $createdLoans[] = $loan;
             }
         }
@@ -280,7 +310,7 @@ class LoanController extends Controller
         ]);
 
         // Tambah sisa stok buku kembali
-        $loan->book->increment('sisa_stok');
+        $loan->book->increment('sisa_stok', $loan->qty ?? 1);
 
         $msg = 'Buku berhasil dikembalikan.';
         if ($fine > 0) {
@@ -303,11 +333,22 @@ class LoanController extends Controller
             'member_id' => 'required|exists:members,id',
             'borrow_date' => 'required|date',
             'due_date' => 'required|date|after_or_equal:borrow_date',
+            'qty' => 'required|integer|min:1',
         ]);
+
+        $qty = $request->input('qty', 1);
 
         $member = Member::findOrFail($request->member_id);
         if ($member->school_id !== $schoolId) {
             return response()->json(['success' => false, 'message' => 'Anggota tidak valid.'], 403);
+        }
+
+        // Check stock availability
+        foreach ($request->book_ids as $bookId) {
+            $book = Book::find($bookId);
+            if (!$book || $book->sisa_stok < $qty) {
+                return response()->json(['success' => false, 'message' => 'Stok buku tidak mencukupi.'], 422);
+            }
         }
 
         // Apakah anggota sudah tap kunjungan hari ini? Jika belum, otomatis buat kunjungan baru.
@@ -328,7 +369,7 @@ class LoanController extends Controller
         $createdLoans = [];
         foreach ($request->book_ids as $bookId) {
             $book = Book::find($bookId);
-            if ($book && $book->sisa_stok > 0) {
+            if ($book && $book->sisa_stok >= $qty) {
                 $loan = Loan::create([
                     'school_id' => $schoolId,
                     'member_id' => $member->id,
@@ -336,9 +377,10 @@ class LoanController extends Controller
                     'borrow_date' => Carbon::parse($request->borrow_date)->format('Y-m-d'),
                     'due_date' => Carbon::parse($request->due_date)->format('Y-m-d'),
                     'status' => 'dipinjam',
-                    'fine' => 0.00
+                    'fine' => 0.00,
+                    'qty' => $qty
                 ]);
-                $book->decrement('sisa_stok');
+                $book->decrement('sisa_stok', $qty);
                 $createdLoans[] = $loan;
             }
         }
@@ -425,7 +467,8 @@ class LoanController extends Controller
                         'book_title' => $loan->book->title,
                         'borrow_date' => $loan->borrow_date->format('Y-m-d'),
                         'due_date' => $loan->due_date->format('Y-m-d'),
-                        'member_name' => $loan->member->name ?? ''
+                        'member_name' => $loan->member->name ?? '',
+                        'qty' => $loan->qty ?? 1
                     ];
                 });
 

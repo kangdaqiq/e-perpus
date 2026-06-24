@@ -79,6 +79,7 @@ return new class extends Migration
             $table->date('return_date')->nullable();
             $table->enum('status', ['dipinjam', 'kembali', 'terlambat'])->default('dipinjam');
             $table->decimal('fine', 10, 2)->default(0.00);
+            $table->integer('qty')->default(1);
             $table->timestamps();
 
             $table->foreign('school_id')->references('id')->on('schools')->onDelete('cascade');

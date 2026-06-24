@@ -15,6 +15,7 @@ class Loan extends Model
         'return_date',
         'status',
         'fine',
+        'qty',
     ];
 
     protected $casts = [
