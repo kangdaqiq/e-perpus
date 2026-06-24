@@ -13,6 +13,13 @@ class BookController extends Controller
      */
     public function index(Request $request)
     {
+        // Auto-fix enum status column if 'completed' is not supported in the database enum
+        try {
+            \Illuminate\Support\Facades\DB::statement("ALTER TABLE pending_verifications MODIFY COLUMN status ENUM('pending', 'verified', 'failed', 'expired', 'completed') DEFAULT 'pending'");
+        } catch (\Exception $e) {
+            // Silence
+        }
+
         $schoolId = auth()->user()->school_id;
         $search = $request->input('search');
 

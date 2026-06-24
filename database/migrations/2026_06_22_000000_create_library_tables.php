@@ -105,7 +105,7 @@ return new class extends Migration
             $table->unsignedBigInteger('school_id');
             $table->unsignedBigInteger('device_id');
             $table->text('transaction_data'); // Menyimpan data buku JSON yang sedang di-input
-            $table->enum('status', ['pending', 'verified', 'failed', 'expired'])->default('pending');
+            $table->enum('status', ['pending', 'verified', 'failed', 'expired', 'completed'])->default('pending');
             $table->string('error_message', 255)->nullable();
             $table->string('scanned_uid', 50)->nullable();
             $table->timestamp('expires_at');
