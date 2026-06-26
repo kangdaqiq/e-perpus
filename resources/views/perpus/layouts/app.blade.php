@@ -11,29 +11,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Outfit', 'sans-serif'],
-                    },
-                    colors: {
-                        brand: {
-                            50: '#f5f3ff',
-                            100: '#ede9fe',
-                            500: '#6366f1', // Indigo
-                            600: '#4f46e5',
-                            700: '#4338ca',
-                        }
-                    }
-                }
-            }
-        }
-    </script>
+    <!-- Vite Assets (Tailwind CSS v4 & JS) -->
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
 
     <!-- Font Awesome -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
