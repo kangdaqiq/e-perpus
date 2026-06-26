@@ -13,7 +13,9 @@ return new class extends Migration
     public function up(): void
     {
         // Alter status column in pending_verifications to add 'completed'
-        DB::statement("ALTER TABLE pending_verifications MODIFY COLUMN status ENUM('pending', 'verified', 'failed', 'expired', 'completed') DEFAULT 'pending'");
+        if (DB::getDriverName() !== 'sqlite') {
+            DB::statement("ALTER TABLE pending_verifications MODIFY COLUMN status ENUM('pending', 'verified', 'failed', 'expired', 'completed') DEFAULT 'pending'");
+        }
     }
 
     /**
@@ -22,6 +24,8 @@ return new class extends Migration
     public function down(): void
     {
         // Revert status column
-        DB::statement("ALTER TABLE pending_verifications MODIFY COLUMN status ENUM('pending', 'verified', 'failed', 'expired') DEFAULT 'pending'");
+        if (DB::getDriverName() !== 'sqlite') {
+            DB::statement("ALTER TABLE pending_verifications MODIFY COLUMN status ENUM('pending', 'verified', 'failed', 'expired') DEFAULT 'pending'");
+        }
     }
 };

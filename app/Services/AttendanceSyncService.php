@@ -54,7 +54,7 @@ class AttendanceSyncService
     public function syncUsers($schoolId = null)
     {
         $query = DB::connection('mysql_absensi')->table('users')
-            ->whereIn('role', ['admin', 'teacher', 'super_admin']);
+            ->where('role', 'teacher');
         if ($schoolId) {
             $query->where('school_id', $schoolId);
         }

@@ -91,7 +91,7 @@
                 </div>
                 <div>
                     <h3 class="font-bold text-lg text-slate-800 dark:text-slate-100">Anggota Teraktif</h3>
-                    <p class="text-xs text-slate-400 font-medium">Peringkat keaktifan anggota berdasarkan poin (Pinjam = 10 Poin, Kunjungan = 5 Poin)</p>
+                    <p class="text-xs text-slate-400 font-medium">Peringkat keaktifan anggota berdasarkan poin (Pinjam = {{ $school->point_borrow ?? 10 }} Poin, Kunjungan = {{ $school->point_visit ?? 5 }} Poin)</p>
                 </div>
             </div>
             
@@ -192,7 +192,7 @@
                                 <h4 class="font-bold text-slate-800 dark:text-slate-100 truncate text-xs">{{ $topVisitor->name }}</h4>
                                 <p class="text-[10px] text-slate-400 truncate">{{ ucfirst($topVisitor->type) }} • {{ $topVisitor->class_or_dept }}</p>
                                 <span class="inline-flex items-center gap-1 mt-1 text-[10px] px-2 py-0.5 bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 rounded-full font-semibold">
-                                    {{ $topVisitor->visits_count }} Kunjungan ({{ $topVisitor->visits_count * 5 }} Poin)
+                                    {{ $topVisitor->visits_count }} Kunjungan ({{ $topVisitor->visits_count * ($school->point_visit ?? 5) }} Poin)
                                 </span>
                             </div>
                         </div>
@@ -216,7 +216,7 @@
                                 <h4 class="font-bold text-slate-800 dark:text-slate-100 truncate text-xs">{{ $topBorrower->name }}</h4>
                                 <p class="text-[10px] text-slate-400 truncate">{{ ucfirst($topBorrower->type) }} • {{ $topBorrower->class_or_dept }}</p>
                                 <span class="inline-flex items-center gap-1 mt-1 text-[10px] px-2 py-0.5 bg-purple-50 dark:bg-purple-950/30 text-purple-600 dark:text-purple-400 rounded-full font-semibold">
-                                    {{ $topBorrower->loans_count }} Peminjaman ({{ $topBorrower->loans_count * 10 }} Poin)
+                                    {{ $topBorrower->loans_count }} Peminjaman ({{ $topBorrower->loans_count * ($school->point_borrow ?? 10) }} Poin)
                                 </span>
                             </div>
                         </div>

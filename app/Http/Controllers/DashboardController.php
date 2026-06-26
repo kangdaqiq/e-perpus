@@ -93,14 +93,18 @@ class DashboardController extends Controller
             ->orderBy('loans_count', 'desc')
             ->first();
 
-        // Papan Peringkat Keaktifan (Poin Peminjaman * 10 + Kunjungan * 5)
+        $school = auth()->user()->school;
+        $pBorrow = $school->point_borrow ?? 10;
+        $pVisit = $school->point_visit ?? 5;
+
+        // Papan Peringkat Keaktifan
         $topMembers = Member::where('school_id', $schoolId)
             ->withCount(['loans', 'visits'])
-            ->orderByRaw('((SELECT COUNT(*) FROM loans WHERE loans.member_id = members.id) * 10 + (SELECT COUNT(*) FROM visits WHERE visits.member_id = members.id) * 5) DESC')
+            ->orderByRaw("((SELECT COUNT(*) FROM loans WHERE loans.member_id = members.id) * {$pBorrow} + (SELECT COUNT(*) FROM visits WHERE visits.member_id = members.id) * {$pVisit}) DESC")
             ->limit(5)
             ->get()
-            ->map(function ($member) {
-                $member->points = ($member->loans_count * 10) + ($member->visits_count * 5);
+            ->map(function ($member) use ($pBorrow, $pVisit) {
+                $member->points = ($member->loans_count * $pBorrow) + ($member->visits_count * $pVisit);
                 return $member;
             })
             ->filter(function ($member) {
@@ -108,6 +112,7 @@ class DashboardController extends Controller
             });
 
         return view('perpus.dashboard', compact(
+            'school',
             'totalBooks',
             'activeLoans',
             'overdueLoans',

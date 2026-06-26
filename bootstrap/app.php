@@ -12,6 +12,11 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->alias([
+            'school_active' => \App\Http\Middleware\CheckSchoolPerpusActive::class,
+            'superadmin'    => \App\Http\Middleware\CheckIsSuperAdmin::class,
+        ]);
+
         // Percayai semua proxy (Cloudflare Tunnel, Nginx, dll.)
         $middleware->trustProxies(
             at: '*',

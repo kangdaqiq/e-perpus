@@ -28,8 +28,8 @@ class RfidController extends Controller
             ], 400);
         }
 
-        $device = Device::where('api_key', $apiKey)->where('active', true)->first();
-        if (!$device) {
+        $device = Device::with('school')->where('api_key', $apiKey)->where('active', true)->first();
+        if (!$device || !$device->school || !$device->school->is_perpus_active) {
             return response()->json([
                 'ok' => false,
                 'message' => 'Device Tidak Terdaftar/Aktif',

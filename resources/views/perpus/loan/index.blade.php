@@ -396,6 +396,7 @@ document.addEventListener('alpine:init', () => {
         selectedLoan: { id: null, member_name: '', book_title: '', borrow_date: '', due_date: '', qty: 1 },
         returnDate: new Date().toISOString().split('T')[0],
         returnQty: 1,
+        finePerDay: {{ auth()->user()->school->fine_per_day ?? 1000 }},
 
         // Return Scan (RFID Quick Return)
         openReturnScanModal: false,
@@ -433,7 +434,7 @@ document.addEventListener('alpine:init', () => {
             if (diffDays > 0) {
                 return {
                     days: diffDays,
-                    fine: diffDays * 1000
+                    fine: diffDays * this.finePerDay
                 };
             }
             return { days: 0, fine: 0 };

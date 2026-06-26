@@ -18,7 +18,7 @@ Route::middleware('guest')->group(function () {
 });
 
 // Authenticated Routes
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'school_active'])->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
     Route::get('/', [DashboardController::class, 'index'])->name('perpus.dashboard');
@@ -53,6 +53,25 @@ Route::middleware('auth')->group(function () {
 
     // Member Management (Siswa & Guru)
     Route::get('/members', [MemberController::class, 'index'])->name('perpus.member.index');
+
+    // Settings Management
+    Route::get('/settings', [\App\Http\Controllers\SettingController::class, 'index'])->name('perpus.settings.index');
+    Route::post('/settings', [\App\Http\Controllers\SettingController::class, 'update'])->name('perpus.settings.update');
+});
+
+// Super Admin Routes
+Route::middleware(['auth', 'superadmin'])->group(function () {
+    // School Management
+    Route::get('/superadmin/schools', [\App\Http\Controllers\SuperAdmin\SchoolManagementController::class, 'index'])->name('superadmin.schools.index');
+    Route::post('/superadmin/schools/{id}/toggle-active', [\App\Http\Controllers\SuperAdmin\SchoolManagementController::class, 'toggleActive'])->name('superadmin.schools.toggle-active');
+
+    // Admin Management
+    Route::get('/superadmin/admins', [\App\Http\Controllers\SuperAdmin\AdminManagementController::class, 'index'])->name('superadmin.admins.index');
+    Route::get('/superadmin/admins/create', [\App\Http\Controllers\SuperAdmin\AdminManagementController::class, 'create'])->name('superadmin.admins.create');
+    Route::post('/superadmin/admins', [\App\Http\Controllers\SuperAdmin\AdminManagementController::class, 'store'])->name('superadmin.admins.store');
+    Route::get('/superadmin/admins/{id}/edit', [\App\Http\Controllers\SuperAdmin\AdminManagementController::class, 'edit'])->name('superadmin.admins.edit');
+    Route::put('/superadmin/admins/{id}', [\App\Http\Controllers\SuperAdmin\AdminManagementController::class, 'update'])->name('superadmin.admins.update');
+    Route::delete('/superadmin/admins/{id}', [\App\Http\Controllers\SuperAdmin\AdminManagementController::class, 'destroy'])->name('superadmin.admins.destroy');
 });
 
 // API endpoint (Tanpa CSRF karena sudah di-exclude di bootstrap/app.php)

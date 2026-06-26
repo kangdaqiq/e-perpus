@@ -34,6 +34,15 @@ class LoanController extends Controller
             // Silence
         }
 
+        // Auto-fix schools table if settings columns are missing
+        try {
+            if (!\Illuminate\Support\Facades\Schema::hasColumn('schools', 'point_borrow')) {
+                \Illuminate\Support\Facades\DB::statement("ALTER TABLE schools ADD COLUMN point_borrow INT DEFAULT 10 AFTER name, ADD COLUMN point_visit INT DEFAULT 5 AFTER point_borrow, ADD COLUMN fine_per_day DECIMAL(10, 2) DEFAULT 1000.00 AFTER point_visit");
+            }
+        } catch (\Exception $e) {
+            // Silence
+        }
+
         $schoolId = auth()->user()->school_id;
         $search = $request->input('search');
         $status = $request->input('status');
@@ -297,11 +306,12 @@ class LoanController extends Controller
         $returnDate = Carbon::parse($request->return_date)->startOfDay();
         $dueDate = Carbon::parse($loan->due_date)->startOfDay();
         
+        $finePerDay = auth()->user()->school->fine_per_day ?? 1000.00;
         $fine = 0.00;
-        // Hitung denda jika terlambat (Rp 1.000,- per hari)
+        // Hitung denda jika terlambat
         if ($returnDate->gt($dueDate)) {
-            $daysLate = $returnDate->diffInDays($dueDate);
-            $fine = $daysLate * 1000.00;
+            $daysLate = abs($returnDate->diffInDays($dueDate));
+            $fine = $daysLate * $finePerDay;
         }
 
         if ($returnQty < $loan->qty) {
@@ -326,7 +336,7 @@ class LoanController extends Controller
 
             $msg = "Sebanyak {$returnQty} buku berhasil dikembalikan. Sisa " . $loan->qty . " buku masih dipinjam.";
             if ($fine > 0) {
-                $msg .= ' Terlambat ' . $returnDate->diffInDays($dueDate) . ' hari. Denda: Rp ' . number_format($fine, 0, ',', '.');
+                $msg .= ' Terlambat ' . abs($returnDate->diffInDays($dueDate)) . ' hari. Denda: Rp ' . number_format($fine, 0, ',', '.');
             }
         } else {
             // Pengembalian penuh
@@ -341,7 +351,7 @@ class LoanController extends Controller
 
             $msg = 'Buku berhasil dikembalikan seluruhnya.';
             if ($fine > 0) {
-                $msg .= ' Terlambat ' . $returnDate->diffInDays($dueDate) . ' hari. Denda: Rp ' . number_format($fine, 0, ',', '.');
+                $msg .= ' Terlambat ' . abs($returnDate->diffInDays($dueDate)) . ' hari. Denda: Rp ' . number_format($fine, 0, ',', '.');
             }
         }
 

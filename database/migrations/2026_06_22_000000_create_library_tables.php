@@ -15,6 +15,9 @@ return new class extends Migration
         Schema::create('schools', function (Blueprint $table) {
             $table->unsignedBigInteger('id')->primary(); // Menerima ID asli dari db absen
             $table->string('name');
+            $table->integer('point_borrow')->default(10);
+            $table->integer('point_visit')->default(5);
+            $table->decimal('fine_per_day', 10, 2)->default(1000.00);
             $table->timestamps();
         });
 

@@ -21,7 +21,25 @@ class DatabaseSeeder extends Seeder
         // Buat sekolah default (jika belum ada)
         $school = School::firstOrCreate(
             ['id' => 1],
-            ['name' => 'Sekolah Default']
+            [
+                'name' => 'Sekolah Default',
+                'is_perpus_active' => true
+            ]
+        );
+        if (!$school->is_perpus_active) {
+            $school->update(['is_perpus_active' => true]);
+        }
+
+        // Buat akun super admin default
+        User::firstOrCreate(
+            ['email' => 'superadmin@eperpus.com'],
+            [
+                'full_name'     => 'Super Administrator',
+                'username'      => 'superadmin',
+                'password_hash' => Hash::make('superpassword'),
+                'role'          => 'super_admin',
+                'school_id'     => null,
+            ]
         );
 
         // Buat akun admin default

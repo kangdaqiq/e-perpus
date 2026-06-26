@@ -105,50 +105,72 @@
                     <span>Dashboard</span>
                 </a>
 
-                <div class="pt-4 pb-2 px-4 text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Modul Pustaka</div>
+                @if(auth()->user()->isSuperAdmin())
+                    <div class="pt-4 pb-2 px-4 text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Super Admin</div>
 
-                <a href="{{ route('perpus.buku.index') }}" 
-                   class="flex items-center gap-4 px-4 py-3 rounded-xl font-medium transition-all duration-200 {{ request()->routeIs('perpus.buku.*') ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800' }}">
-                    <i class="fa-solid fa-book text-lg"></i>
-                    <span>Katalog Buku</span>
-                </a>
+                    <a href="{{ route('superadmin.schools.index') }}" 
+                       class="flex items-center gap-4 px-4 py-3 rounded-xl font-medium transition-all duration-200 {{ request()->routeIs('superadmin.schools.*') ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800' }}">
+                        <i class="fa-solid fa-school text-lg"></i>
+                        <span>Kelola Sekolah</span>
+                    </a>
 
-                <a href="{{ route('perpus.kunjungan.index') }}" 
-                   class="flex items-center gap-4 px-4 py-3 rounded-xl font-medium transition-all duration-200 {{ request()->routeIs('perpus.kunjungan.*') ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800' }}">
-                    <i class="fa-solid fa-users-rectangle text-lg"></i>
-                    <span>Buku Tamu</span>
-                </a>
+                    <a href="{{ route('superadmin.admins.index') }}" 
+                       class="flex items-center gap-4 px-4 py-3 rounded-xl font-medium transition-all duration-200 {{ request()->routeIs('superadmin.admins.*') ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800' }}">
+                        <i class="fa-solid fa-user-shield text-lg"></i>
+                        <span>Kelola Admin Sekolah</span>
+                    </a>
+                @else
+                    <div class="pt-4 pb-2 px-4 text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Modul Pustaka</div>
 
-                <a href="{{ route('perpus.loan.index') }}" 
-                   class="flex items-center gap-4 px-4 py-3 rounded-xl font-medium transition-all duration-200 {{ request()->routeIs('perpus.loan.*') ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800' }}">
-                    <i class="fa-solid fa-handshake text-lg"></i>
-                    <span>Peminjaman Buku</span>
-                </a>
+                    <a href="{{ route('perpus.buku.index') }}" 
+                       class="flex items-center gap-4 px-4 py-3 rounded-xl font-medium transition-all duration-200 {{ request()->routeIs('perpus.buku.*') ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800' }}">
+                        <i class="fa-solid fa-book text-lg"></i>
+                        <span>Katalog Buku</span>
+                    </a>
 
-                <div class="pt-4 pb-2 px-4 text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Perangkat & Data</div>
+                    <a href="{{ route('perpus.kunjungan.index') }}" 
+                       class="flex items-center gap-4 px-4 py-3 rounded-xl font-medium transition-all duration-200 {{ request()->routeIs('perpus.kunjungan.*') ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800' }}">
+                        <i class="fa-solid fa-users-rectangle text-lg"></i>
+                        <span>Buku Tamu</span>
+                    </a>
 
-                <a href="{{ route('perpus.device.index') }}" 
-                   class="flex items-center gap-4 px-4 py-3 rounded-xl font-medium transition-all duration-200 {{ request()->routeIs('perpus.device.*') ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800' }}">
-                    <i class="fa-solid fa-server text-lg"></i>
-                    <span>Scanner RFID</span>
-                </a>
+                    <a href="{{ route('perpus.loan.index') }}" 
+                       class="flex items-center gap-4 px-4 py-3 rounded-xl font-medium transition-all duration-200 {{ request()->routeIs('perpus.loan.*') ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800' }}">
+                        <i class="fa-solid fa-handshake text-lg"></i>
+                        <span>Peminjaman Buku</span>
+                    </a>
 
-                <a href="{{ route('perpus.member.index') }}" 
-                   class="flex items-center gap-4 px-4 py-3 rounded-xl font-medium transition-all duration-200 {{ request()->routeIs('perpus.member.*') ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800' }}">
-                    <i class="fa-solid fa-graduation-cap text-lg"></i>
-                    <span>Siswa & Guru</span>
-                </a>
+                    <div class="pt-4 pb-2 px-4 text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Perangkat & Data</div>
 
-                <div class="pt-4">
-                    <form action="{{ route('perpus.sync') }}" method="POST">
-                        @csrf
-                        <button type="submit" 
-                                class="w-full flex items-center gap-4 px-4 py-3 rounded-xl font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all duration-200">
-                            <i class="fa-solid fa-arrows-rotate text-lg text-emerald-500"></i>
-                            <span>Sinkron Data Absen</span>
-                        </button>
-                    </form>
-                </div>
+                    <a href="{{ route('perpus.device.index') }}" 
+                       class="flex items-center gap-4 px-4 py-3 rounded-xl font-medium transition-all duration-200 {{ request()->routeIs('perpus.device.*') ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800' }}">
+                        <i class="fa-solid fa-server text-lg"></i>
+                        <span>Scanner RFID</span>
+                    </a>
+
+                    <a href="{{ route('perpus.member.index') }}" 
+                       class="flex items-center gap-4 px-4 py-3 rounded-xl font-medium transition-all duration-200 {{ request()->routeIs('perpus.member.*') ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800' }}">
+                        <i class="fa-solid fa-graduation-cap text-lg"></i>
+                        <span>Siswa & Guru</span>
+                    </a>
+
+                    <a href="{{ route('perpus.settings.index') }}" 
+                       class="flex items-center gap-4 px-4 py-3 rounded-xl font-medium transition-all duration-200 {{ request()->routeIs('perpus.settings.*') ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800' }}">
+                        <i class="fa-solid fa-gears text-lg"></i>
+                        <span>Pengaturan</span>
+                    </a>
+
+                    <div class="pt-4">
+                        <form action="{{ route('perpus.sync') }}" method="POST">
+                            @csrf
+                            <button type="submit" 
+                                    class="w-full flex items-center gap-4 px-4 py-3 rounded-xl font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all duration-200">
+                                <i class="fa-solid fa-arrows-rotate text-lg text-emerald-500"></i>
+                                <span>Sinkron Data Absen</span>
+                            </button>
+                        </form>
+                    </div>
+                @endif
             </nav>
 
             <!-- User Profile & Logout -->

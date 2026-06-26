@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class School extends Model
 {
-    protected $fillable = ['id', 'name'];
+    protected $fillable = ['id', 'name', 'point_borrow', 'point_visit', 'fine_per_day'];
     public $incrementing = false;
 
     public function users()
