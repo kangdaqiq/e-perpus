@@ -24,6 +24,10 @@ Route::middleware(['auth', 'school_active'])->group(function () {
     Route::get('/', [DashboardController::class, 'index'])->name('perpus.dashboard');
     Route::post('/sync', [SyncController::class, 'sync'])->name('perpus.sync');
 
+    // Profile Settings
+    Route::get('/profile', [\App\Http\Controllers\ProfileController::class, 'edit'])->name('perpus.profile.edit');
+    Route::put('/profile', [\App\Http\Controllers\ProfileController::class, 'update'])->name('perpus.profile.update');
+
     // Buku (Catalog)
     Route::get('/books', [BookController::class, 'index'])->name('perpus.buku.index');
     Route::post('/books', [BookController::class, 'store'])->name('perpus.buku.store');
