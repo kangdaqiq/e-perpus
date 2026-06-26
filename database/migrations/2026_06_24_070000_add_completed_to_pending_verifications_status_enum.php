@@ -18,13 +18,15 @@ return new class extends Migration
         }
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         // Revert status column
         if (DB::getDriverName() !== 'sqlite') {
+            // Ubah data 'completed' ke status lain agar tidak memicu truncation error saat rollback
+            DB::table('pending_verifications')
+                ->where('status', 'completed')
+                ->update(['status' => 'failed']);
+
             DB::statement("ALTER TABLE pending_verifications MODIFY COLUMN status ENUM('pending', 'verified', 'failed', 'expired') DEFAULT 'pending'");
         }
     }
