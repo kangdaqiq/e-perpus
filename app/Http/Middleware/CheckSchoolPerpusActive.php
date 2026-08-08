@@ -29,7 +29,7 @@ class CheckSchoolPerpusActive
                 $request->session()->regenerateToken();
 
                 return redirect()->route('login')->withErrors([
-                    'login' => 'Akses E-Perpus untuk sekolah Anda belum aktif atau telah dinonaktifkan. Silakan hubungi Super Admin.'
+                    'login' => 'Akses E-Library untuk sekolah Anda belum aktif atau telah dinonaktifkan. Silakan hubungi Super Admin.'
                 ]);
             }
         }

@@ -3,6 +3,7 @@
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 
+use Illuminate\Support\Facades\Schedule;
 use App\Services\AttendanceSyncService;
 
 Artisan::command('inspire', function () {
@@ -21,3 +22,6 @@ Artisan::command('sync:attendance {school_id?}', function ($school_id = null) {
         $this->info('Sinkronisasi seluruh data absensi berhasil.');
     }
 })->purpose('Sinkronisasi data sekolah, user, dan anggota dari database absensi');
+
+// Daily Full SQL Database Backup (Runs at 02:00 AM)
+Schedule::command('db:backup')->dailyAt('02:00')->withoutOverlapping();
