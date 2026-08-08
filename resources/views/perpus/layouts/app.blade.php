@@ -121,12 +121,6 @@
 
                     <div class="pt-4 pb-2 px-4 text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Perangkat & Data</div>
 
-                    <a href="{{ route('perpus.device.index') }}" 
-                       class="flex items-center gap-4 px-4 py-3 rounded-xl font-medium transition-all duration-200 {{ request()->routeIs('perpus.device.*') ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800' }}">
-                        <i class="fa-solid fa-server text-lg"></i>
-                        <span>Scanner RFID</span>
-                    </a>
-
                     <a href="{{ route('perpus.member.index') }}" 
                        class="flex items-center gap-4 px-4 py-3 rounded-xl font-medium transition-all duration-200 {{ request()->routeIs('perpus.member.*') ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800' }}">
                         <i class="fa-solid fa-users text-lg"></i>
