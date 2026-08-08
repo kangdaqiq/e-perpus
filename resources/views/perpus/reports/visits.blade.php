@@ -3,21 +3,14 @@
 @section('title', 'Rekap Kunjungan Perpustakaan')
 
 @section('content')
-<!-- Header Banner -->
-<div class="mb-8 p-6 md:p-8 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 rounded-3xl text-white shadow-xl shadow-indigo-600/20 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+<!-- Header Page Actions -->
+<div class="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
     <div>
-        <div class="flex items-center gap-3 mb-2">
-            <div class="p-2.5 bg-white/10 rounded-2xl backdrop-blur-md">
-                <i class="fa-solid fa-clipboard-user text-2xl"></i>
-            </div>
-            <h2 class="text-2xl md:text-3xl font-bold">Rekap Kunjungan Perpustakaan</h2>
-        </div>
-        <p class="text-indigo-100 text-sm md:text-base font-medium max-w-2xl">
-            Laporan dan rekapitulasi data pengunjung perpustakaan {{ $school->name ?? '' }}. Gunakan filter kelas, jurusan, dan tanggal untuk menyajikan data terperinci.
-        </p>
+        <h2 class="text-2xl font-bold text-slate-800 dark:text-slate-100">Rekap Kunjungan Perpustakaan</h2>
+        <p class="text-sm text-slate-400">Laporan dan rekapitulasi data pengunjung perpustakaan {{ $school->name ?? '' }}.</p>
     </div>
-    <div class="flex items-center gap-3">
-        <a href="{{ route('perpus.reports.visits.print', request()->query()) }}" target="_blank" class="px-5 py-3 bg-white text-indigo-700 font-bold rounded-2xl shadow-lg hover:bg-indigo-50 active:scale-95 transition-all duration-200 flex items-center gap-2 text-sm">
+    <div>
+        <a href="{{ route('perpus.reports.visits.print', request()->query()) }}" target="_blank" class="px-5 py-3 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white font-semibold rounded-2xl shadow-lg shadow-indigo-600/20 transition-all duration-150 flex items-center gap-2 text-sm">
             <i class="fa-solid fa-print"></i>
             <span>Cetak Laporan</span>
         </a>
