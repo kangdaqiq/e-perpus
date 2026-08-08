@@ -69,6 +69,12 @@ Route::middleware(['auth', 'school_active'])->group(function () {
     Route::get('/settings', [\App\Http\Controllers\SettingController::class, 'index'])->name('perpus.settings.index');
     Route::post('/settings', [\App\Http\Controllers\SettingController::class, 'update'])->name('perpus.settings.update');
 
+    // Reports & Recaps
+    Route::get('/reports/visits', [\App\Http\Controllers\ReportController::class, 'rekapKunjungan'])->name('perpus.reports.visits');
+    Route::get('/reports/visits/print', [\App\Http\Controllers\ReportController::class, 'cetakKunjungan'])->name('perpus.reports.visits.print');
+    Route::get('/reports/loans', [\App\Http\Controllers\ReportController::class, 'rekapPeminjaman'])->name('perpus.reports.loans');
+    Route::get('/reports/loans/print', [\App\Http\Controllers\ReportController::class, 'cetakPeminjaman'])->name('perpus.reports.loans.print');
+
     // Leave Impersonation Route (accessible during impersonation)
     Route::post('/superadmin/impersonate/leave', [\App\Http\Controllers\SuperAdmin\SchoolManagementController::class, 'leaveImpersonation'])->name('superadmin.schools.impersonate.leave');
 });
