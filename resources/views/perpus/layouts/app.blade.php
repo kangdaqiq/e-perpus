@@ -60,7 +60,22 @@
             <div class="absolute inset-0 border-4 border-indigo-200 rounded-full"></div>
             <div class="absolute inset-0 border-4 border-indigo-600 rounded-full animate-spin border-t-transparent"></div>
         </div>
+    <!-- Impersonation Sticky Banner -->
+    @if(session()->has('impersonator_id'))
+    <div class="bg-amber-400 dark:bg-amber-500 text-slate-950 px-4 py-2.5 flex items-center justify-between text-xs sm:text-sm font-bold shadow-md z-40 sticky top-0">
+        <div class="flex items-center gap-2.5">
+            <i class="fa-solid fa-user-secret text-base"></i>
+            <span>Mode Direct Login Tenant: <span class="underline">{{ auth()->user()->school->name ?? 'Sekolah' }}</span> (Logged in as: {{ auth()->user()->full_name }})</span>
+        </div>
+        <form action="{{ route('superadmin.schools.impersonate.leave') }}" method="POST">
+            @csrf
+            <button type="submit" class="px-3 py-1 bg-slate-900 hover:bg-slate-950 text-white rounded-xl text-xs transition-all duration-150 flex items-center gap-1.5 font-bold shadow-sm">
+                <i class="fa-solid fa-arrow-left-long"></i>
+                <span>Kembali ke Super Admin</span>
+            </button>
+        </form>
     </div>
+    @endif
 
     <div class="min-h-screen flex flex-col md:flex-row">
         <!-- Sidebar Menu -->

@@ -67,7 +67,8 @@ Route::middleware(['auth', 'school_active'])->group(function () {
 
     // Settings Management
     Route::get('/settings', [\App\Http\Controllers\SettingController::class, 'index'])->name('perpus.settings.index');
-    Route::post('/settings', [\App\Http\Controllers\SettingController::class, 'update'])->name('perpus.settings.update');
+    // Leave Impersonation Route (accessible during impersonation)
+    Route::post('/superadmin/impersonate/leave', [\App\Http\Controllers\SuperAdmin\SchoolManagementController::class, 'leaveImpersonation'])->name('superadmin.schools.impersonate.leave');
 });
 
 // Super Admin Routes
@@ -75,6 +76,7 @@ Route::middleware(['auth', 'superadmin'])->group(function () {
     // School Management
     Route::get('/superadmin/schools', [\App\Http\Controllers\SuperAdmin\SchoolManagementController::class, 'index'])->name('superadmin.schools.index');
     Route::post('/superadmin/schools/{id}/toggle-active', [\App\Http\Controllers\SuperAdmin\SchoolManagementController::class, 'toggleActive'])->name('superadmin.schools.toggle-active');
+    Route::post('/superadmin/schools/{id}/impersonate', [\App\Http\Controllers\SuperAdmin\SchoolManagementController::class, 'impersonate'])->name('superadmin.schools.impersonate');
 
     // Admin Management
     Route::get('/superadmin/admins', [\App\Http\Controllers\SuperAdmin\AdminManagementController::class, 'index'])->name('superadmin.admins.index');

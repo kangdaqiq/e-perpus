@@ -45,6 +45,13 @@
                         <td class="p-6 text-center text-slate-800 dark:text-slate-200">{{ number_format($school->members_count) }}</td>
                         <td class="p-6 text-center">
                             <div class="flex items-center justify-center gap-2">
+                                <form action="{{ route('superadmin.schools.impersonate', $school->id) }}" method="POST" class="inline flex-shrink-0">
+                                    @csrf
+                                    <button type="submit" class="px-4 py-2 text-xs font-bold bg-amber-500 hover:bg-amber-600 text-slate-950 rounded-xl transition-all duration-150 flex items-center gap-1.5 shadow-sm shadow-amber-500/20" title="Direct Login ke Tenant">
+                                        <i class="fa-solid fa-right-to-bracket"></i>
+                                        <span>Direct Login</span>
+                                    </button>
+                                </form>
                                 <form action="{{ route('superadmin.schools.toggle-active', $school->id) }}" method="POST" class="inline flex-shrink-0">
                                     @csrf
                                     <button type="submit" class="px-4 py-2 text-xs font-bold rounded-xl border transition-all duration-150 {{ $school->is_perpus_active ? 'border-rose-200 dark:border-rose-800 text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/20' : 'border-emerald-200 dark:border-emerald-800 text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/20' }}">
