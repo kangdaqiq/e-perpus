@@ -141,7 +141,7 @@
 
                     <a href="{{ route('perpus.reports.visits') }}" 
                        class="flex items-center gap-4 px-4 py-3 rounded-xl font-medium transition-all duration-200 {{ request()->routeIs('perpus.reports.visits*') ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800' }}">
-                        <i class="fa-solid fa-file-chart-column text-lg"></i>
+                        <i class="fa-solid fa-clipboard-user text-lg"></i>
                         <span>Rekap Kunjungan</span>
                     </a>
 

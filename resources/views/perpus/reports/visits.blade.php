@@ -8,7 +8,7 @@
     <div>
         <div class="flex items-center gap-3 mb-2">
             <div class="p-2.5 bg-white/10 rounded-2xl backdrop-blur-md">
-                <i class="fa-solid fa-file-chart-column text-2xl"></i>
+                <i class="fa-solid fa-clipboard-user text-2xl"></i>
             </div>
             <h2 class="text-2xl md:text-3xl font-bold">Rekap Kunjungan Perpustakaan</h2>
         </div>
