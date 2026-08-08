@@ -6,6 +6,10 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title') | E-Perpus Standalone</title>
 
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
+    <link rel="shortcut icon" href="{{ asset('favicon.ico') }}">
+
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -66,11 +70,9 @@
             <!-- Logo Section -->
             <div class="p-6 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
                 <a href="{{ route('perpus.dashboard') }}" class="flex items-center gap-3">
-                    <div class="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-600/30 text-white">
-                        <i class="fa-solid fa-book-open text-lg"></i>
-                    </div>
+                    <img src="{{ asset('images/logo/logo-icon.svg') }}" alt="Jagattech Logo" class="w-10 h-10 object-contain" onerror="this.onerror=null; this.src='{{ asset('img/logo.png') }}';">
                     <div>
-                        <h1 class="font-bold text-lg leading-tight bg-gradient-to-r from-indigo-600 to-purple-500 bg-clip-text text-transparent">E-Perpus</h1>
+                        <h1 class="font-bold text-lg leading-tight bg-gradient-to-r from-indigo-600 to-purple-500 bg-clip-text text-transparent">Jagattech E-Perpus</h1>
                         <p class="text-xs text-slate-400 font-medium">Integrated System</p>
                     </div>
                 </a>

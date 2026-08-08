@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Masuk - E-Perpus Standalone</title>
 
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
+    <link rel="shortcut icon" href="{{ asset('favicon.ico') }}">
+
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -31,10 +35,10 @@
     <div class="w-full max-w-md bg-white rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-100 p-8 md:p-10">
         <!-- Logo Section -->
         <div class="text-center mb-8">
-            <div class="w-14 h-14 bg-indigo-600 rounded-2xl flex items-center justify-center shadow-lg shadow-indigo-600/30 text-white mx-auto mb-4">
-                <i class="fa-solid fa-book-open text-2xl"></i>
+            <div class="w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+                <img src="{{ asset('images/logo/logo-icon.svg') }}" alt="Jagattech Logo" class="w-full h-full object-contain" onerror="this.onerror=null; this.src='{{ asset('img/logo.png') }}';">
             </div>
-            <h1 class="font-bold text-2xl bg-gradient-to-r from-indigo-600 to-purple-500 bg-clip-text text-transparent">E-Perpus Login</h1>
+            <h1 class="font-bold text-2xl bg-gradient-to-r from-indigo-600 to-purple-500 bg-clip-text text-transparent">Jagattech E-Perpus</h1>
             <p class="text-sm text-slate-400 mt-1">Gunakan akun absensi Anda untuk masuk</p>
         </div>
 
