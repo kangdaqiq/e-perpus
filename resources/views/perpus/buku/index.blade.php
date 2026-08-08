@@ -57,9 +57,10 @@
                             <td class="p-6">
                                 <div class="w-12 h-16 bg-slate-100 dark:bg-slate-800 rounded-lg overflow-hidden border border-slate-200 dark:border-slate-700 flex items-center justify-center">
                                     @if($book->cover_url)
-                                        <img src="{{ $book->cover_url }}" alt="Cover" class="w-full h-full object-cover">
+                                        <img src="{{ asset($book->cover_url) }}" alt="Cover" class="w-full h-full object-cover" onerror="this.style.display='none';this.nextElementSibling.style.display='block';">
+                                        <i class="fa-solid fa-book-bookmark text-slate-400 text-lg" style="display:none;"></i>
                                     @else
-                                        <i class="fa-solid fa-image text-slate-300 text-lg"></i>
+                                        <i class="fa-solid fa-book-bookmark text-slate-300 text-lg"></i>
                                     @endif
                                 </div>
                             </td>
@@ -283,6 +284,67 @@
                     </div>
                 </div>
 
+                <!-- Borrower Type Toggle (Siswa vs Guru) -->
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Pilih Tipe Peminjam</label>
+                    <div class="grid grid-cols-2 gap-3">
+                        <button type="button" @click="borrowerType = 'siswa'; selectedTeacherId = ''; selectedTeacherText = ''; teacherInfo = null;" 
+                                class="py-2.5 px-4 text-xs font-bold rounded-2xl border transition-all flex items-center justify-center gap-2 cursor-pointer select-none"
+                                :class="borrowerType === 'siswa' ? 'bg-indigo-50 dark:bg-indigo-950/40 border-indigo-500 text-indigo-600 dark:text-indigo-400 shadow-sm' : 'bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-500 hover:text-slate-700'">
+                            <i class="fa-solid fa-user-graduate"></i> Siswa
+                        </button>
+                        <button type="button" @click="borrowerType = 'guru'; selectedMemberId = ''; selectedMemberText = '';" 
+                                class="py-2.5 px-4 text-xs font-bold rounded-2xl border transition-all flex items-center justify-center gap-2 cursor-pointer select-none"
+                                :class="borrowerType === 'guru' ? 'bg-indigo-50 dark:bg-indigo-950/40 border-indigo-500 text-indigo-600 dark:text-indigo-400 shadow-sm' : 'bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-500 hover:text-slate-700'">
+                            <i class="fa-solid fa-chalkboard-user"></i> Guru / Staf
+                        </button>
+                    </div>
+                </div>
+
+                <!-- GURU REALTIME SEARCH DROPDOWN (Shown when borrowerType === 'guru') -->
+                <div x-show="borrowerType === 'guru'" class="space-y-2" x-data="{ openTeacherDropdown: false }" x-cloak>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-400">Pilih Guru (Peminjam Utama)</label>
+                    <div class="relative">
+                        <div @click="openTeacherDropdown = !openTeacherDropdown" 
+                             class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl text-sm font-semibold text-slate-800 dark:text-slate-200 flex justify-between items-center cursor-pointer select-none">
+                            <span x-text="selectedTeacherId ? selectedTeacherText : '-- Cari & Pilih Guru (NIP / Nama) --'"></span>
+                            <i class="fa-solid fa-chevron-down text-xs text-slate-400 transition-transform" :class="openTeacherDropdown ? 'rotate-180' : ''"></i>
+                        </div>
+                        
+                        <div x-show="openTeacherDropdown" 
+                             @click.away="openTeacherDropdown = false"
+                             x-transition
+                             class="absolute z-50 w-full mt-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl overflow-hidden max-h-60 flex flex-col"
+                             x-cloak>
+                            <div class="p-3 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/60 flex items-center gap-2">
+                                <i class="fa-solid fa-magnifying-glass text-slate-400 text-xs"></i>
+                                <input type="text" 
+                                       x-model="teacherSearchQuery" 
+                                       @keydown.escape="openTeacherDropdown = false"
+                                       placeholder="Ketik NIP, nama atau divisi guru..." 
+                                       class="w-full bg-transparent text-xs text-slate-800 dark:text-slate-200 focus:outline-none">
+                                <button type="button" x-show="teacherSearchQuery" @click="teacherSearchQuery = ''" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-xs"></i></button>
+                            </div>
+                            
+                            <div class="overflow-y-auto max-h-48 divide-y divide-slate-100 dark:divide-slate-800/40 text-xs">
+                                <template x-for="teacher in filteredTeachers" :key="teacher.id">
+                                    <div @click="selectedTeacherId = teacher.id; selectedTeacherText = teacher.name + ' (NIP: ' + teacher.code + ' - ' + teacher.class_or_dept + ')'; openTeacherDropdown = false; teacherSearchQuery = ''"
+                                         class="p-3 hover:bg-indigo-50 dark:hover:bg-indigo-950/20 cursor-pointer transition-colors text-left flex flex-col gap-0.5">
+                                        <div class="font-bold text-slate-900 dark:text-slate-100" x-text="teacher.name"></div>
+                                        <div class="text-slate-500 dark:text-slate-400 font-medium text-[11px] mt-0.5">
+                                            Divisi/Jabatan: <span class="text-slate-800 dark:text-slate-200 font-semibold" x-text="teacher.class_or_dept"></span> &bull; 
+                                            NIP: <span class="text-slate-800 dark:text-slate-200 font-semibold" x-text="teacher.code"></span>
+                                        </div>
+                                    </div>
+                                </template>
+                                <div x-show="filteredTeachers.length === 0" class="p-4 text-center text-slate-400 font-medium">
+                                    Tidak ada data guru yang cocok dengan pencarian.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Input Mode Toggle -->
                 <div class="flex bg-slate-100 dark:bg-slate-950 p-1.5 rounded-2xl">
                     <button type="button" @click="inputMode = 'rfid'" 
@@ -312,20 +374,25 @@
                             <p class="text-xs text-rose-500 font-semibold mt-2">Peringatan: Belum ada device yang aktif.</p>
                         @endif
                     </div>
+                    <!-- Info Banner when Borrower is Guru -->
+                    <div x-show="borrowerType === 'guru'" class="p-3 bg-indigo-50/70 dark:bg-indigo-950/40 border border-indigo-100 dark:border-indigo-900/50 rounded-2xl text-xs text-indigo-700 dark:text-indigo-300 flex items-center gap-2.5">
+                        <i class="fa-solid fa-circle-info text-indigo-500 text-sm"></i>
+                        <span>Verifikasi dilakukan dengan memindai <strong>kartu RFID milik Siswa</strong> yang ditugaskan untuk mengambil buku.</span>
+                    </div>
                 </div>
 
                 <!-- MANUAL MODE OPTIONS (REALTIME SEARCH DROP DOWN) -->
                 <div x-show="inputMode === 'manual'" class="space-y-4" x-cloak
                      x-data="{ openDropdown: false }">
-                    <p class="text-xs text-slate-400">Cari berdasarkan NIS/NIP, Kelas/Divisi, atau Nama:</p>
+                    <p class="text-xs text-slate-400" x-text="borrowerType === 'guru' ? 'Pilih siswa yang ditugaskan untuk mengambil buku:' : 'Cari berdasarkan NIS/NIP, Kelas/Divisi, atau Nama:'"></p>
                     
                     <div class="relative">
-                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Pilih Anggota Perpustakaan</label>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2" x-text="borrowerType === 'guru' ? 'Pilih Siswa (Pengambil Buku)' : 'Pilih Anggota Perpustakaan'"></label>
                         
                         <!-- Trigger Selector text display -->
                         <div @click="openDropdown = !openDropdown" 
                              class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl text-sm focus:outline-none focus-within:border-indigo-600 font-semibold text-slate-800 dark:text-slate-200 flex justify-between items-center cursor-pointer select-none">
-                            <span x-text="selectedMemberId ? selectedMemberText : '-- Pilih Anggota (Cari NIS/NIP/Nama) --'"></span>
+                            <span x-text="selectedMemberId ? selectedMemberText : (borrowerType === 'guru' ? '-- Pilih Siswa Pengambil Buku --' : '-- Pilih Anggota (Cari NIS/NIP/Nama) --')"></span>
                             <i class="fa-solid fa-chevron-down text-xs text-slate-400 transition-transform" :class="openDropdown ? 'rotate-180' : ''"></i>
                         </div>
                         
@@ -350,7 +417,7 @@
                             <!-- Search Options Scroll list -->
                             <div class="overflow-y-auto max-h-48 divide-y divide-slate-100 dark:divide-slate-800/40 text-xs">
                                 <template x-for="member in filteredMembers" :key="member.id">
-                                    <div @click="selectedMemberId = member.id; selectedMemberText = member.name + ' (' + (member.type === 'siswa' ? 'Kelas: ' + member.class_or_dept + ' - NIS/NISN: ' : 'NIP: ') + member.code + ')'; openDropdown = false; memberSearchQuery = ''"
+                                    <div @click="selectedMemberId = member.id; selectedMemberText = member.name + ' (' + (member.type === 'siswa' ? 'Kelas: ' + member.class_or_dept + ' - NIS: ' : 'NIP: ') + member.code + ')'; openDropdown = false; memberSearchQuery = ''"
                                          class="p-3 hover:bg-indigo-50 dark:hover:bg-indigo-950/20 cursor-pointer transition-colors text-left flex flex-col gap-0.5">
                                         <div class="font-bold text-slate-900 dark:text-slate-100" x-text="member.name"></div>
                                         <div class="text-slate-500 dark:text-slate-400 font-medium text-[11px] mt-0.5">
@@ -392,12 +459,12 @@
                 <div class="pt-4 border-t border-slate-100 dark:border-slate-800 flex justify-end gap-3">
                     <button type="button" @click="closeLoanModal()" class="px-5 py-2.5 border border-slate-200 dark:border-slate-800 rounded-xl font-bold text-sm">Batal</button>
                     <!-- RFID Submit Button -->
-                    <button type="button" @click="startVerification()" :disabled="!deviceId" x-show="inputMode === 'rfid'"
+                    <button type="button" @click="startVerification()" :disabled="!deviceId || (borrowerType === 'guru' && !selectedTeacherId)" x-show="inputMode === 'rfid'"
                             class="px-5 py-2.5 bg-indigo-600 disabled:opacity-50 hover:bg-indigo-700 text-white font-bold rounded-xl text-sm shadow-lg shadow-indigo-600/20 active:scale-95 transition-all">
                         Mulai Verifikasi Tap
                     </button>
                     <!-- Manual Submit Button -->
-                    <button type="button" @click="submitManual()" :disabled="!selectedMemberId" x-show="inputMode === 'manual'" x-cloak
+                    <button type="button" @click="submitManual()" :disabled="!selectedMemberId || (borrowerType === 'guru' && !selectedTeacherId)" x-show="inputMode === 'manual'" x-cloak
                             class="px-5 py-2.5 bg-indigo-600 disabled:opacity-50 hover:bg-indigo-700 text-white font-bold rounded-xl text-sm shadow-lg shadow-indigo-600/20 active:scale-95 transition-all">
                         Lanjut ke Konfirmasi
                     </button>
@@ -423,11 +490,30 @@
                         <span class="text-sm font-bold text-slate-800 dark:text-slate-100" x-text="loanBook.title + ' (Qty: ' + qty + ')'"></span>
                     </div>
 
-                    <div class="border-t border-slate-200 dark:border-slate-800 pt-2.5">
-                        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Peminjam (Anggota)</span>
-                        <span class="text-sm font-bold text-indigo-600 dark:text-indigo-400 block" x-text="scannedMember.name"></span>
-                        <p class="text-xs text-slate-400 font-semibold uppercase mt-0.5" x-text="scannedMember.class_or_dept + ' • ' + scannedMember.code"></p>
-                    </div>
+                    <!-- Mode Guru -->
+                    <template x-if="borrowerType === 'guru'">
+                        <div class="space-y-3 border-t border-slate-200 dark:border-slate-800 pt-2.5">
+                            <div>
+                                <span class="text-[10px] font-bold text-indigo-500 uppercase tracking-wider block">Peminjam Utama (Guru)</span>
+                                <span class="text-sm font-bold text-indigo-600 dark:text-indigo-400 block" x-text="teacherInfo ? teacherInfo.name : selectedTeacherText"></span>
+                                <p class="text-xs text-slate-400 font-semibold uppercase mt-0.5" x-text="teacherInfo ? ('NIP: ' + teacherInfo.code + ' • ' + teacherInfo.class_or_dept) : ''"></p>
+                            </div>
+                            <div class="border-t border-dashed border-slate-200 dark:border-slate-800 pt-2">
+                                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Pengambil Buku (Siswa Scan/Pilih)</span>
+                                <span class="text-sm font-bold text-slate-800 dark:text-slate-100 block" x-text="scannedMember.name"></span>
+                                <p class="text-xs text-slate-400 font-semibold uppercase mt-0.5" x-text="scannedMember.class_or_dept + ' • ' + scannedMember.code"></p>
+                            </div>
+                        </div>
+                    </template>
+
+                    <!-- Mode Siswa -->
+                    <template x-if="borrowerType === 'siswa'">
+                        <div class="border-t border-slate-200 dark:border-slate-800 pt-2.5">
+                            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Peminjam (Anggota)</span>
+                            <span class="text-sm font-bold text-indigo-600 dark:text-indigo-400 block" x-text="scannedMember.name"></span>
+                            <p class="text-xs text-slate-400 font-semibold uppercase mt-0.5" x-text="scannedMember.class_or_dept + ' • ' + scannedMember.code"></p>
+                        </div>
+                    </template>
 
                     <!-- Date Range Display & Edit inputs -->
                     <div class="border-t border-slate-200 dark:border-slate-800 pt-2.5 grid grid-cols-2 gap-4">
@@ -632,6 +718,11 @@ document.addEventListener('alpine:init', () => {
         totalBooks: 0,
         errorMessage: '',
         inputMode: 'rfid', // 'rfid', 'manual'
+        borrowerType: 'siswa', // 'siswa', 'guru'
+        selectedTeacherId: '',
+        selectedTeacherText: '',
+        teacherSearchQuery: '',
+        teacherInfo: null,
         selectedMemberId: '',
         selectedMemberText: '',
         members: {!! json_encode($members->map(fn($m) => [
@@ -650,12 +741,28 @@ document.addEventListener('alpine:init', () => {
         submitting: false,
         qty: 1,
 
+        get filteredTeachers() {
+            const list = this.members.filter(m => m.type === 'guru');
+            if (!this.teacherSearchQuery) {
+                return list;
+            }
+            const q = this.teacherSearchQuery.toLowerCase();
+            return list.filter(m => 
+                (m.name && m.name.toLowerCase().includes(q)) || 
+                (m.code && m.code.toLowerCase().includes(q)) ||
+                (m.class_or_dept && m.class_or_dept.toLowerCase().includes(q))
+            );
+        },
+
         get filteredMembers() {
+            const list = this.borrowerType === 'guru' 
+                ? this.members.filter(m => m.type === 'siswa')
+                : this.members;
             if (!this.memberSearchQuery) {
-                return this.members;
+                return list;
             }
             const q = this.memberSearchQuery.toLowerCase();
-            return this.members.filter(m => 
+            return list.filter(m => 
                 (m.name && m.name.toLowerCase().includes(q)) || 
                 (m.code && m.code.toLowerCase().includes(q)) ||
                 (m.class_or_dept && m.class_or_dept.toLowerCase().includes(q))
@@ -682,6 +789,10 @@ document.addEventListener('alpine:init', () => {
                 alert('Silakan pilih perangkat scanner RFID.');
                 return;
             }
+            if (this.borrowerType === 'guru' && !this.selectedTeacherId) {
+                alert('Silakan pilih Guru (Peminjam Utama) terlebih dahulu.');
+                return;
+            }
 
             this.step = 'waiting';
             this.expiresIn = 120;
@@ -696,7 +807,9 @@ document.addEventListener('alpine:init', () => {
                 body: JSON.stringify({
                     book_ids: [this.loanBook.id],
                     device_id: this.deviceId,
-                    qty: this.qty
+                    qty: this.qty,
+                    borrower_type: this.borrowerType,
+                    teacher_id: this.borrowerType === 'guru' ? this.selectedTeacherId : null
                 })
             })
             .then(res => res.json())
@@ -739,19 +852,49 @@ document.addEventListener('alpine:init', () => {
                 alert('Jumlah pinjam tidak boleh melebihi sisa stok yang tersedia (' + this.loanBook.sisa_stok + ').');
                 return;
             }
-            if (!this.selectedMemberId) {
-                alert('Silakan pilih anggota perpustakaan.');
-                return;
-            }
-            const mb = this.members.find(m => m.id == this.selectedMemberId);
-            if (mb) {
-                this.scannedMember = {
-                    id: mb.id,
-                    name: mb.name,
-                    code: mb.code,
-                    class_or_dept: mb.class_or_dept
-                };
+            if (this.borrowerType === 'guru') {
+                if (!this.selectedTeacherId) {
+                    alert('Silakan pilih Guru (Peminjam Utama).');
+                    return;
+                }
+                if (!this.selectedMemberId) {
+                    alert('Silakan pilih Siswa yang ditugaskan untuk mengambil buku.');
+                    return;
+                }
+                const teacher = this.members.find(m => m.id == this.selectedTeacherId);
+                const student = this.members.find(m => m.id == this.selectedMemberId);
+                if (teacher) {
+                    this.teacherInfo = {
+                        id: teacher.id,
+                        name: teacher.name,
+                        code: teacher.code,
+                        class_or_dept: teacher.class_or_dept
+                    };
+                }
+                if (student) {
+                    this.scannedMember = {
+                        id: student.id,
+                        name: student.name,
+                        code: student.code,
+                        class_or_dept: student.class_or_dept
+                    };
+                }
                 this.step = 'confirm';
+            } else {
+                if (!this.selectedMemberId) {
+                    alert('Silakan pilih anggota perpustakaan.');
+                    return;
+                }
+                const mb = this.members.find(m => m.id == this.selectedMemberId);
+                if (mb) {
+                    this.scannedMember = {
+                        id: mb.id,
+                        name: mb.name,
+                        code: mb.code,
+                        class_or_dept: mb.class_or_dept
+                    };
+                    this.step = 'confirm';
+                }
             }
         },
 
@@ -769,6 +912,9 @@ document.addEventListener('alpine:init', () => {
                         code: data.member_code,
                         class_or_dept: data.class_or_dept
                     };
+                    if (data.teacher) {
+                        this.teacherInfo = data.teacher;
+                    }
                     this.step = 'confirm';
                 } else if (data.status === 'failed') {
                     this.stopTimers();
@@ -829,6 +975,8 @@ document.addEventListener('alpine:init', () => {
                     body: JSON.stringify({
                         book_ids: [this.loanBook.id],
                         member_id: this.selectedMemberId,
+                        borrower_type: this.borrowerType,
+                        teacher_id: this.borrowerType === 'guru' ? this.selectedTeacherId : null,
                         borrow_date: this.borrowDate,
                         due_date: this.dueDate,
                         qty: this.qty
@@ -865,6 +1013,11 @@ document.addEventListener('alpine:init', () => {
             this.pendingId = null;
             this.errorMessage = '';
             this.inputMode = 'rfid';
+            this.borrowerType = 'siswa';
+            this.selectedTeacherId = '';
+            this.selectedTeacherText = '';
+            this.teacherSearchQuery = '';
+            this.teacherInfo = null;
             this.selectedMemberId = '';
             this.selectedMemberText = '';
             this.memberSearchQuery = '';

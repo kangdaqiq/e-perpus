@@ -74,7 +74,13 @@
                         <tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition-colors">
                             <td class="p-6">
                                 <div class="font-bold text-slate-900 dark:text-slate-100">{{ $loan->member->name }}</div>
-                                <div class="text-xs text-slate-400 font-semibold uppercase tracking-wider mt-0.5">{{ $loan->member->type }} • {{ $loan->member->class_or_dept }}</div>
+                                <div class="text-xs text-slate-400 font-semibold uppercase tracking-wider mt-0.5">{{ $loan->member->source_type ?? 'Anggota' }} • {{ $loan->member->class_or_dept }}</div>
+                                @if($loan->pickupMember && $loan->pickup_member_id !== $loan->member_id)
+                                    <div class="text-[11px] text-indigo-600 dark:text-indigo-400 font-semibold mt-1.5 flex items-center gap-1 bg-indigo-50/60 dark:bg-indigo-950/40 px-2 py-0.5 rounded-md w-fit">
+                                        <i class="fa-solid fa-hand-holding"></i>
+                                        <span>Diambil oleh: <strong>{{ $loan->pickupMember->name }}</strong> ({{ $loan->pickupMember->class_or_dept }})</span>
+                                    </div>
+                                @endif
                             </td>
                             <td class="p-6 max-w-xs">
                                 <div class="font-semibold text-slate-800 dark:text-slate-200 truncate">{{ $loan->book->title }}</div>

@@ -1,23 +1,23 @@
 @extends('perpus.layouts.app')
 
-@section('title', 'Data Siswa & Guru')
+@section('title', 'Daftar Anggota Perpustakaan')
 
 @section('content')
 <div>
     <!-- Header Page Actions -->
     <div class="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-            <h2 class="text-2xl font-bold text-slate-800 dark:text-slate-100">Data Siswa & Guru</h2>
-            <p class="text-sm text-slate-400">Kelola informasi anggota perpustakaan dan pendaftaran kartu RFID.</p>
+            <h2 class="text-2xl font-bold text-slate-800 dark:text-slate-100">Daftar Anggota Perpustakaan</h2>
+            <p class="text-sm text-slate-400">Data terintegrasi siswa dan guru/staf.</p>
         </div>
     </div>
 
-    <!-- Summary Stats Cards -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <!-- Card 1: Total -->
+    <!-- Summary Statistics Grid -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <!-- Card 1: Total Members -->
         <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-3xl shadow-sm flex items-center gap-5 hover:shadow-md transition-all duration-200">
             <div class="w-12 h-12 bg-indigo-50 dark:bg-indigo-950/40 rounded-2xl flex items-center justify-center text-indigo-600 dark:text-indigo-400 text-xl">
-                <i class="fa-solid fa-graduation-cap"></i>
+                <i class="fa-solid fa-users"></i>
             </div>
             <div>
                 <span class="block text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Total Anggota</span>
@@ -27,11 +27,11 @@
 
         <!-- Card 2: Students -->
         <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-3xl shadow-sm flex items-center gap-5 hover:shadow-md transition-all duration-200">
-            <div class="w-12 h-12 bg-sky-50 dark:bg-sky-950/40 rounded-2xl flex items-center justify-center text-sky-600 dark:text-sky-400 text-xl">
+            <div class="w-12 h-12 bg-blue-50 dark:bg-blue-950/40 rounded-2xl flex items-center justify-center text-blue-600 dark:text-blue-400 text-xl">
                 <i class="fa-solid fa-user-graduate"></i>
             </div>
             <div>
-                <span class="block text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Total Siswa</span>
+                <span class="block text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Siswa</span>
                 <span class="text-2xl font-bold text-slate-800 dark:text-slate-100">{{ number_format($stats['students']) }}</span>
             </div>
         </div>

@@ -43,11 +43,20 @@ class LoanController extends Controller
             // Silence
         }
 
+        // Auto-fix loans table if 'pickup_member_id' column is missing
+        try {
+            if (!\Illuminate\Support\Facades\Schema::hasColumn('loans', 'pickup_member_id')) {
+                \Illuminate\Support\Facades\DB::statement("ALTER TABLE loans ADD COLUMN pickup_member_id BIGINT UNSIGNED NULL AFTER member_id");
+            }
+        } catch (\Exception $e) {
+            // Silence
+        }
+
         $schoolId = auth()->user()->school_id;
         $search = $request->input('search');
         $status = $request->input('status');
 
-        $query = Loan::with(['member', 'book'])
+        $query = Loan::with(['member', 'pickupMember', 'book'])
             ->where('school_id', $schoolId)
             ->orderBy('borrow_date', 'desc');
 
@@ -101,6 +110,8 @@ class LoanController extends Controller
             'book_ids.*' => 'exists:books,id',
             'device_id' => 'required|exists:devices,id',
             'qty' => 'nullable|integer|min:1',
+            'borrower_type' => 'nullable|string|in:siswa,guru',
+            'teacher_id' => 'nullable|exists:members,id',
         ]);
 
         $qty = $request->input('qty', 1);
@@ -126,6 +137,8 @@ class LoanController extends Controller
             'transaction_data' => [
                 'book_ids' => $request->book_ids,
                 'qty' => $qty,
+                'borrower_type' => $request->input('borrower_type', 'siswa'),
+                'teacher_id' => $request->input('teacher_id'),
                 'borrow_date' => Carbon::now()->format('Y-m-d'),
                 'due_date' => Carbon::now()->addDays(7)->format('Y-m-d'), // Default 7 hari pinjam
             ],
@@ -169,13 +182,29 @@ class LoanController extends Controller
                 return response()->json(['status' => 'failed', 'message' => 'Anggota tidak ditemukan.'], 404);
             }
 
+            $txData = $pending->transaction_data;
+            $teacherData = null;
+            if (isset($txData['borrower_type']) && $txData['borrower_type'] === 'guru' && !empty($txData['teacher_id'])) {
+                $teacher = Member::find($txData['teacher_id']);
+                if ($teacher) {
+                    $teacherData = [
+                        'id' => $teacher->id,
+                        'name' => $teacher->name,
+                        'code' => $teacher->member_code,
+                        'class_or_dept' => $teacher->class_or_dept ?? 'Guru / Staf'
+                    ];
+                }
+            }
+
             return response()->json([
                 'status' => 'scanned',
                 'member_id' => $member->id,
                 'member_name' => $member->name,
                 'member_code' => $member->member_code,
-                'class_or_dept' => $member->class_or_dept ?? 'Guru / Staf',
-                'scanned_uid' => $pending->scanned_uid
+                'class_or_dept' => $member->class_or_dept ?? 'Siswa',
+                'scanned_uid' => $pending->scanned_uid,
+                'borrower_type' => $txData['borrower_type'] ?? 'siswa',
+                'teacher' => $teacherData
             ]);
         }
 
@@ -251,6 +280,17 @@ class LoanController extends Controller
 
         $txData = $pending->transaction_data;
         $qty = $txData['qty'] ?? 1;
+
+        $borrowerMemberId = $member->id;
+        $pickupMemberId = null;
+        if (isset($txData['borrower_type']) && $txData['borrower_type'] === 'guru' && !empty($txData['teacher_id'])) {
+            $teacher = Member::find($txData['teacher_id']);
+            if ($teacher) {
+                $borrowerMemberId = $teacher->id;
+                $pickupMemberId = $member->id; // Siswa yang melakukan scan RFID
+            }
+        }
+
         $createdLoans = [];
 
         foreach ($txData['book_ids'] as $bookId) {
@@ -258,7 +298,8 @@ class LoanController extends Controller
             if ($book && $book->sisa_stok >= $qty) {
                 $loan = Loan::create([
                     'school_id' => $schoolId,
-                    'member_id' => $member->id,
+                    'member_id' => $borrowerMemberId,
+                    'pickup_member_id' => $pickupMemberId,
                     'book_id' => $book->id,
                     'borrow_date' => Carbon::parse($request->borrow_date)->format('Y-m-d'),
                     'due_date' => Carbon::parse($request->due_date)->format('Y-m-d'),
@@ -274,9 +315,15 @@ class LoanController extends Controller
 
         $pending->update(['status' => 'completed']);
 
+        $finalBorrower = Member::find($borrowerMemberId);
+        $displayName = $finalBorrower ? $finalBorrower->name : $member->name;
+        if ($pickupMemberId && $pickupMember = Member::find($pickupMemberId)) {
+            $displayName .= ' (Diambil oleh: ' . $pickupMember->name . ')';
+        }
+
         return response()->json([
             'success' => true,
-            'member_name' => $member->name,
+            'member_name' => $displayName,
             'total_books' => count($createdLoans)
         ]);
     }
@@ -369,6 +416,8 @@ class LoanController extends Controller
             'book_ids' => 'required|array|min:1',
             'book_ids.*' => 'exists:books,id',
             'member_id' => 'required|exists:members,id',
+            'borrower_type' => 'nullable|string|in:siswa,guru',
+            'teacher_id' => 'nullable|exists:members,id',
             'borrow_date' => 'required|date',
             'due_date' => 'required|date|after_or_equal:borrow_date',
             'qty' => 'required|integer|min:1',
@@ -376,7 +425,14 @@ class LoanController extends Controller
 
         $qty = $request->input('qty', 1);
 
-        $member = Member::findOrFail($request->member_id);
+        $borrowerMemberId = $request->member_id;
+        $pickupMemberId = null;
+        if ($request->input('borrower_type') === 'guru' && $request->filled('teacher_id')) {
+            $borrowerMemberId = $request->teacher_id;
+            $pickupMemberId = $request->member_id; // Siswa yang dipilih di input manual
+        }
+
+        $member = Member::findOrFail($borrowerMemberId);
         if ($member->school_id !== $schoolId) {
             return response()->json(['success' => false, 'message' => 'Anggota tidak valid.'], 403);
         }
@@ -410,7 +466,8 @@ class LoanController extends Controller
             if ($book && $book->sisa_stok >= $qty) {
                 $loan = Loan::create([
                     'school_id' => $schoolId,
-                    'member_id' => $member->id,
+                    'member_id' => $borrowerMemberId,
+                    'pickup_member_id' => $pickupMemberId,
                     'book_id' => $book->id,
                     'borrow_date' => Carbon::parse($request->borrow_date)->format('Y-m-d'),
                     'due_date' => Carbon::parse($request->due_date)->format('Y-m-d'),
@@ -423,9 +480,14 @@ class LoanController extends Controller
             }
         }
 
+        $displayName = $member->name;
+        if ($pickupMemberId && $pickupMember = Member::find($pickupMemberId)) {
+            $displayName .= ' (Diambil oleh: ' . $pickupMember->name . ')';
+        }
+
         return response()->json([
             'success' => true,
-            'member_name' => $member->name,
+            'member_name' => $displayName,
             'total_books' => count($createdLoans)
         ]);
     }

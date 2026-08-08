@@ -129,8 +129,8 @@
 
                     <a href="{{ route('perpus.member.index') }}" 
                        class="flex items-center gap-4 px-4 py-3 rounded-xl font-medium transition-all duration-200 {{ request()->routeIs('perpus.member.*') ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800' }}">
-                        <i class="fa-solid fa-graduation-cap text-lg"></i>
-                        <span>Siswa & Guru</span>
+                        <i class="fa-solid fa-users text-lg"></i>
+                        <span>Data Anggota</span>
                     </a>
 
                     <a href="{{ route('perpus.settings.index') }}" 

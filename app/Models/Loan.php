@@ -9,6 +9,7 @@ class Loan extends Model
     protected $fillable = [
         'school_id',
         'member_id',
+        'pickup_member_id',
         'book_id',
         'borrow_date',
         'due_date',
@@ -32,6 +33,11 @@ class Loan extends Model
     public function member()
     {
         return $this->belongsTo(Member::class);
+    }
+
+    public function pickupMember()
+    {
+        return $this->belongsTo(Member::class, 'pickup_member_id');
     }
 
     public function book()
