@@ -137,16 +137,13 @@ Saat fresh install, belum ada user di database E-Perpus. Sync butuh login, tapi 
 
 **Step 1** — Pastikan `.env` sudah dikonfigurasi dan database absensi bisa diakses.
 
-**Step 2** — Jalankan sync lewat tinker:
+**Step 2** — Jalankan perintah sinkronisasi Artisan:
 
 ```bash
-php artisan tinker
+php artisan sync:attendance
 ```
 
-```php
-// Di dalam tinker, jalankan:
-app(App\Services\AttendanceSyncService::class)->syncAll();
-```
+*(Atau jika ingin sinkronisasi sekolah tertentu: `php artisan sync:attendance 1`)*
 
 Perintah ini akan menyalin:
 - ✅ Data **sekolah** dari db absensi
