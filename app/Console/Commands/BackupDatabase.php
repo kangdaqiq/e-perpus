@@ -76,7 +76,8 @@ class BackupDatabase extends Command
             $this->info("Backup successful: $filename");
 
             // Upload ke Cloudflare R2 jika dikonfigurasi
-            if (env('CLOUDFLARE_R2_ENDPOINT')) {
+            $r2Endpoint = config('filesystems.disks.r2.endpoint') ?: env('CLOUDFLARE_R2_ENDPOINT');
+            if (!empty($r2Endpoint)) {
                 $this->info("Uploading backup to Cloudflare R2 Storage (folder: backup-library)...");
                 try {
                     Storage::disk('r2')->put("backup-library/$filename", file_get_contents($filePath));
