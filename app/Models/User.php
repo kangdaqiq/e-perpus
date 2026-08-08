@@ -51,4 +51,14 @@ class User extends Authenticatable
     {
         return $this->role === 'admin';
     }
+
+    public function isAssistantAdmin()
+    {
+        return $this->role === 'admin_pembantu';
+    }
+
+    public function canManageAssistantAdmins()
+    {
+        return $this->isAdmin() || $this->isSuperAdmin();
+    }
 }

@@ -10,6 +10,7 @@ use App\Http\Controllers\DeviceController;
 use App\Http\Controllers\SyncController;
 use App\Http\Controllers\Api\RfidController;
 use App\Http\Controllers\MemberController;
+use App\Http\Controllers\AssistantAdminController;
 
 // Guest Routes
 Route::middleware('guest')->group(function () {
@@ -57,6 +58,12 @@ Route::middleware(['auth', 'school_active'])->group(function () {
 
     // Member Management (Siswa & Guru)
     Route::get('/members', [MemberController::class, 'index'])->name('perpus.member.index');
+
+    // Assistant Admin Management
+    Route::get('/assistant-admins', [AssistantAdminController::class, 'index'])->name('perpus.assistant-admins.index');
+    Route::post('/assistant-admins', [AssistantAdminController::class, 'store'])->name('perpus.assistant-admins.store');
+    Route::put('/assistant-admins/{id}', [AssistantAdminController::class, 'update'])->name('perpus.assistant-admins.update');
+    Route::delete('/assistant-admins/{id}', [AssistantAdminController::class, 'destroy'])->name('perpus.assistant-admins.destroy');
 
     // Settings Management
     Route::get('/settings', [\App\Http\Controllers\SettingController::class, 'index'])->name('perpus.settings.index');
