@@ -16,9 +16,10 @@ class DashboardController extends Controller
      */
     public function index()
     {
-        $schoolId = auth()->user()->school_id;
-        if (!$schoolId) {
-            // Untuk super admin jika login tanpa school_id
+        $user = auth()->user();
+
+        // Untuk super admin jika tidak sedang dalam mode impersonasi
+        if ($user->isSuperAdmin() && !session()->has('impersonator_id')) {
             $totalSchools = \App\Models\School::count();
             $totalUsers = \App\Models\User::count();
             $totalMembers = \App\Models\Member::count();
@@ -52,6 +53,11 @@ class DashboardController extends Controller
                 'todayVisits',
                 'schools'
             ));
+        }
+
+        $schoolId = $user->school_id;
+        if (!$schoolId) {
+            return redirect()->route('login')->withErrors(['login' => 'Akun Anda tidak memiliki sekolah terasosiasi.']);
         }
 
         // Statistik
