@@ -38,7 +38,7 @@
             <div class="w-16 h-16 mx-auto mb-4 flex items-center justify-center">
                 <img src="{{ asset('images/logo/logo-icon.svg') }}" alt="Jagattech Logo" class="w-full h-full object-contain" onerror="this.onerror=null; this.src='{{ asset('img/logo.png') }}';">
             </div>
-            <h1 class="font-bold text-2xl bg-gradient-to-r from-indigo-600 to-purple-500 bg-clip-text text-transparent">Jagattech E-Perpus</h1>
+            <h1 class="font-bold text-2xl bg-gradient-to-r from-indigo-600 to-purple-500 bg-clip-text text-transparent">E-Perpus Login</h1>
             <p class="text-sm text-slate-400 mt-1">Gunakan akun absensi Anda untuk masuk</p>
         </div>
 
