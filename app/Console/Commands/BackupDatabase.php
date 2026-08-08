@@ -77,9 +77,9 @@ class BackupDatabase extends Command
 
             // Upload ke Cloudflare R2 jika dikonfigurasi
             if (env('CLOUDFLARE_R2_ENDPOINT')) {
-                $this->info("Uploading backup to Cloudflare R2 Storage...");
+                $this->info("Uploading backup to Cloudflare R2 Storage (folder: backup-jagat/backup-library)...");
                 try {
-                    Storage::disk('r2')->put("backups/$filename", file_get_contents($filePath));
+                    Storage::disk('r2')->put("backup-jagat/backup-library/$filename", file_get_contents($filePath));
                     $this->info("Backup successfully uploaded to Cloudflare R2.");
 
                     // Hapus backup lama di Cloudflare R2 (Simpan 7 hari terakhir)
@@ -128,12 +128,12 @@ class BackupDatabase extends Command
         $this->info("Cleaning old backups from Cloudflare R2 (older than 7 days)...");
         try {
             $disk = Storage::disk('r2');
-            $files = $disk->files('backups');
+            $files = $disk->files('backup-jagat/backup-library');
             $now = time();
             $keepDays = 7;
 
             foreach ($files as $file) {
-                if (!preg_match('/^backups\/backup-.*\.sql$/', $file)) {
+                if (!preg_match('/^backup-jagat\/backup-library\/backup-.*\.sql$/', $file)) {
                     continue;
                 }
 
