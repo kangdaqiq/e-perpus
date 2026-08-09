@@ -57,7 +57,9 @@ class BookOcrTest extends TestCase
     public function test_ocr_returns_error_when_api_key_is_missing(): void
     {
         Config::set('services.gemini.api_key', null);
-        putenv('GEMINI_API_KEY=');
+        $_ENV['GEMINI_API_KEY'] = null;
+        $_SERVER['GEMINI_API_KEY'] = null;
+        putenv('GEMINI_API_KEY');
 
         $response = $this->actingAs($this->admin)->postJson(route('perpus.buku.scan-ocr'), [
             'image' => UploadedFile::fake()->create('cover.jpg', 10, 'image/jpeg'),

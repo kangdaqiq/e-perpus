@@ -57,7 +57,7 @@ class BookController extends Controller
             'year' => 'nullable|integer',
             'stock' => 'required|integer|min:0',
             'location' => 'nullable|string|max:100',
-            'cover' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'cover' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:20480',
         ]);
 
         // Validasi kode buku unik per sekolah
@@ -99,7 +99,7 @@ class BookController extends Controller
             'year' => 'nullable|integer',
             'stock' => 'required|integer|min:0',
             'location' => 'nullable|string|max:100',
-            'cover' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'cover' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:20480',
         ]);
 
         $exists = Book::where('school_id', $schoolId)

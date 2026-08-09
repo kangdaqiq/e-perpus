@@ -126,8 +126,7 @@
     <!-- MODAL: ADD BOOK -->
     <div class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 backdrop-blur-sm p-4" 
          x-show="openAddModal" x-transition x-cloak>
-        <div class="w-full max-w-xl bg-white dark:bg-slate-900 rounded-3xl shadow-xl border border-slate-200 dark:border-slate-800 overflow-hidden max-h-[90vh] flex flex-col" 
-             @click.away="openAddModal = false">
+        <div class="w-full max-w-xl bg-white dark:bg-slate-900 rounded-3xl shadow-xl border border-slate-200 dark:border-slate-800 overflow-hidden max-h-[90vh] flex flex-col">
             <div class="p-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center shrink-0">
                 <h3 class="font-bold text-lg flex items-center gap-2">
                     <i class="fa-solid fa-book text-indigo-600"></i>
@@ -137,17 +136,35 @@
             </div>
             <form action="{{ route('perpus.buku.store') }}" method="POST" enctype="multipart/form-data" class="p-6 space-y-4 overflow-y-auto">
                 @csrf
+                <input type="hidden" name="_form" value="add">
+
+                @if($errors->any() && old('_form') === 'add')
+                    <div class="p-4 bg-rose-50 dark:bg-rose-950/50 border border-rose-200 dark:border-rose-900 rounded-2xl text-xs text-rose-600 dark:text-rose-400 space-y-1">
+                        <div class="font-bold flex items-center gap-1.5 mb-1">
+                            <i class="fa-solid fa-circle-exclamation"></i>
+                            <span>Gagal menyimpan buku:</span>
+                        </div>
+                        <ul class="list-disc list-inside space-y-0.5">
+                            @foreach($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
 
                 <!-- AI Vision OCR Banner & Trigger -->
                 <div class="p-4 bg-gradient-to-r from-indigo-500/10 via-purple-500/10 to-pink-500/10 border border-indigo-200 dark:border-indigo-800/50 rounded-2xl">
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                         <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-purple-600 flex items-center justify-center text-white shadow-md shadow-indigo-500/20 shrink-0">
-                                <i class="fa-solid fa-wand-magic-sparkles text-lg"></i>
+                            <div class="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center text-white shadow-md shadow-indigo-600/30 shrink-0">
+                                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                </svg>
                             </div>
                             <div>
                                 <h4 class="text-xs font-bold text-slate-800 dark:text-slate-100 flex items-center gap-1.5">
-                                    <span>Isi Otomatis dengan AI Gemini</span>
+                                    <span>Isi Otomatis dengan Foto</span>
                                     <span class="px-2 py-0.5 bg-indigo-100 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400 text-[10px] rounded-full uppercase tracking-wider font-extrabold">Smart Scan</span>
                                 </h4>
                                 <p class="text-[11px] text-slate-500 dark:text-slate-400">Foto sampul atau halaman informasi buku untuk auto-fill form.</p>
@@ -166,7 +183,7 @@
                     <!-- OCR Loading State -->
                     <div x-show="isScanningOcr" x-transition class="mt-3 p-3 bg-white/90 dark:bg-slate-900/90 rounded-xl border border-indigo-100 dark:border-indigo-950 flex items-center gap-3 text-xs text-indigo-600 dark:text-indigo-400 font-semibold">
                         <i class="fa-solid fa-circle-notch fa-spin text-base"></i>
-                        <span>AI Gemini sedang menganalisis foto & mengekstrak informasi buku...</span>
+                        <span>Sedang menganalisis foto & mengekstrak informasi buku...</span>
                     </div>
 
                     <!-- OCR Success Message -->
@@ -252,8 +269,7 @@
     <!-- MODAL: EDIT BOOK -->
     <div class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 backdrop-blur-sm p-4" 
          x-show="openEditModal" x-transition x-cloak>
-        <div class="w-full max-w-xl bg-white dark:bg-slate-900 rounded-3xl shadow-xl border border-slate-200 dark:border-slate-800 overflow-hidden" 
-             @click.away="openEditModal = false">
+        <div class="w-full max-w-xl bg-white dark:bg-slate-900 rounded-3xl shadow-xl border border-slate-200 dark:border-slate-800 overflow-hidden">
             <div class="p-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
                 <h3 class="font-bold text-lg">Edit Buku</h3>
                 <button @click="openEditModal = false" class="text-slate-400 hover:text-slate-500"><i class="fa-solid fa-xmark"></i></button>
@@ -314,8 +330,7 @@
     <!-- MODAL: PINJAM BUKU (TAP RFID & MANUAL SEARCH) -->
     <div class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 backdrop-blur-sm p-4" 
          x-show="openLoanModal" x-transition x-cloak>
-        <div class="w-full max-w-xl bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-visible shadow-indigo-500/10" 
-             @click.away="closeLoanModal()">
+        <div class="w-full max-w-xl bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-visible shadow-indigo-500/10">
             
             <!-- Modal Header -->
             <div class="p-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
@@ -713,8 +728,7 @@
     <!-- MODAL: DELETE CONFIRMATION -->
     <div class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 backdrop-blur-sm p-4"
          x-show="openDeleteModal" x-transition x-cloak>
-        <div class="w-full max-w-sm bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden"
-             @click.away="openDeleteModal = false">
+        <div class="w-full max-w-sm bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden">
             <!-- Icon -->
             <div class="p-8 flex flex-col items-center text-center">
                 <div class="w-16 h-16 rounded-2xl bg-rose-100 dark:bg-rose-950/40 flex items-center justify-center mb-4">
@@ -750,9 +764,9 @@
 <script>
 document.addEventListener('alpine:init', () => {
     Alpine.data('bukuCatalog', () => ({
-        openAddModal: false,
+        openAddModal: {{ $errors->any() && old('_form') === 'add' ? 'true' : 'false' }},
         openEditModal: false,
-        newBook: { code: '', title: '', author: '', publisher: '', year: '', stock: 1, location: '' },
+        newBook: { code: '{{ old('code') }}', title: '{{ old('title') }}', author: '{{ old('author') }}', publisher: '{{ old('publisher') }}', year: '{{ old('year') }}', stock: '{{ old('stock', 1) }}', location: '{{ old('location') }}' },
         editBook: { id: '', code: '', title: '', author: '', publisher: '', year: '', stock: '', location: '', cover_url: '' },
         
         // AI Vision OCR States
@@ -760,6 +774,59 @@ document.addEventListener('alpine:init', () => {
         ocrErrorMessage: '',
         ocrSuccessMessage: '',
         ocrPreviewUrl: '',
+
+        compressImage(file, maxWidth = 1200, maxHeight = 1200, quality = 0.82) {
+            return new Promise((resolve) => {
+                if (!file || file.size < 800 * 1024) {
+                    resolve(file);
+                    return;
+                }
+
+                const img = new Image();
+                const reader = new FileReader();
+
+                reader.onload = (e) => {
+                    img.src = e.target.result;
+                };
+
+                img.onload = () => {
+                    let width = img.width;
+                    let height = img.height;
+
+                    if (width > maxWidth || height > maxHeight) {
+                        if (width > height) {
+                            height = Math.round((height * maxWidth) / width);
+                            width = maxWidth;
+                        } else {
+                            width = Math.round((width * maxHeight) / height);
+                            height = maxHeight;
+                        }
+                    }
+
+                    const canvas = document.createElement('canvas');
+                    canvas.width = width;
+                    canvas.height = height;
+
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+
+                    canvas.toBlob((blob) => {
+                        if (blob) {
+                            const compressedFile = new File([blob], file.name.replace(/\.[^/.]+$/, "") + ".jpg", {
+                                type: 'image/jpeg',
+                                lastModified: Date.now()
+                            });
+                            resolve(compressedFile);
+                        } else {
+                            resolve(file);
+                        }
+                    }, 'image/jpeg', quality);
+                };
+
+                img.onerror = () => resolve(file);
+                reader.readAsDataURL(file);
+            });
+        },
 
         resetAddBookForm() {
             this.newBook = { code: '', title: '', author: '', publisher: '', year: '', stock: 1, location: '' };
@@ -773,13 +840,19 @@ document.addEventListener('alpine:init', () => {
             if (ocrInput) ocrInput.value = '';
         },
 
-        handleOcrScan(event) {
-            const file = event.target.files[0];
+        async handleOcrScan(event) {
+            let file = event.target.files[0];
             if (!file) return;
 
             this.isScanningOcr = true;
             this.ocrErrorMessage = '';
             this.ocrSuccessMessage = '';
+
+            try {
+                file = await this.compressImage(file, 1200, 1200, 0.82);
+            } catch (e) {
+                console.warn('Compression skipped:', e);
+            }
 
             const reader = new FileReader();
             reader.onload = (e) => {
