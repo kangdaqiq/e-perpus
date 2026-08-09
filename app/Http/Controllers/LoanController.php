@@ -291,6 +291,24 @@ class LoanController extends Controller
             }
         }
 
+        // Otomatis buat kunjungan di Buku Tamu untuk peminjam dan pengambil (jika belum tap hari ini)
+        $membersToVisit = array_unique(array_filter([$borrowerMemberId, $pickupMemberId]));
+        foreach ($membersToVisit as $visitingMemberId) {
+            $hasVisitToday = Visit::where('member_id', $visitingMemberId)
+                ->where('school_id', $schoolId)
+                ->whereDate('scanned_at', today())
+                ->exists();
+
+            if (!$hasVisitToday) {
+                Visit::create([
+                    'school_id' => $schoolId,
+                    'member_id' => $visitingMemberId,
+                    'purpose' => 'Membaca / Meminjam Buku (Auto)',
+                    'scanned_at' => now()
+                ]);
+            }
+        }
+
         $createdLoans = [];
 
         foreach ($txData['book_ids'] as $bookId) {
@@ -445,19 +463,22 @@ class LoanController extends Controller
             }
         }
 
-        // Apakah anggota sudah tap kunjungan hari ini? Jika belum, otomatis buat kunjungan baru.
-        $hasVisitToday = Visit::where('member_id', $member->id)
-            ->where('school_id', $schoolId)
-            ->whereDate('scanned_at', today())
-            ->exists();
+        // Otomatis buat kunjungan di Buku Tamu untuk peminjam (Guru/Siswa) dan pengambil (Siswa), jika belum tap hari ini
+        $membersToVisit = array_unique(array_filter([$borrowerMemberId, $pickupMemberId]));
+        foreach ($membersToVisit as $visitingMemberId) {
+            $hasVisitToday = Visit::where('member_id', $visitingMemberId)
+                ->where('school_id', $schoolId)
+                ->whereDate('scanned_at', today())
+                ->exists();
 
-        if (!$hasVisitToday) {
-            Visit::create([
-                'school_id' => $schoolId,
-                'member_id' => $member->id,
-                'purpose' => 'Membaca / Meminjam Buku (Auto)',
-                'scanned_at' => now()
-            ]);
+            if (!$hasVisitToday) {
+                Visit::create([
+                    'school_id' => $schoolId,
+                    'member_id' => $visitingMemberId,
+                    'purpose' => 'Membaca / Meminjam Buku (Auto)',
+                    'scanned_at' => now()
+                ]);
+            }
         }
 
         $createdLoans = [];

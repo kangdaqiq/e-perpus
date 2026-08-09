@@ -126,4 +126,57 @@ class ReportTest extends TestCase
         $response->assertStatus(200);
         $response->assertSee('LAPORAN REKAPITULASI PEMINJAMAN BUKU');
     }
+
+    public function test_teacher_loan_with_student_pickup_creates_visits_for_both_student_and_teacher(): void
+    {
+        $student = Member::create([
+            'school_id' => $this->school->id,
+            'source_type' => 'siswa',
+            'source_id' => 201,
+            'member_code' => 'SISWA01',
+            'name' => 'Siswa Pengambil',
+            'class_or_dept' => 'X RPL 1',
+        ]);
+
+        $teacher = Member::create([
+            'school_id' => $this->school->id,
+            'source_type' => 'guru',
+            'source_id' => 202,
+            'member_code' => 'GURU01',
+            'name' => 'Guru Peminjam',
+            'class_or_dept' => 'Guru / Staf',
+        ]);
+
+        $book = Book::create([
+            'school_id' => $this->school->id,
+            'code' => 'BK-200',
+            'title' => 'Buku Panduan Guru',
+            'stock' => 5,
+            'sisa_stok' => 5,
+        ]);
+
+        $response = $this->actingAs($this->admin)
+            ->postJson(route('perpus.loan.store-manual'), [
+                'book_ids' => [$book->id],
+                'member_id' => $student->id,
+                'borrower_type' => 'guru',
+                'teacher_id' => $teacher->id,
+                'borrow_date' => now()->format('Y-m-d'),
+                'due_date' => now()->addDays(7)->format('Y-m-d'),
+                'qty' => 1,
+            ]);
+
+        $response->assertStatus(200);
+
+        // Verify visits exist for BOTH student and teacher
+        $this->assertDatabaseHas('visits', [
+            'school_id' => $this->school->id,
+            'member_id' => $student->id,
+        ]);
+
+        $this->assertDatabaseHas('visits', [
+            'school_id' => $this->school->id,
+            'member_id' => $teacher->id,
+        ]);
+    }
 }
