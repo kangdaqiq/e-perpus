@@ -11,7 +11,7 @@
             <p class="text-sm text-slate-400">Daftar buku tamu, stok, dan pencarian pustaka.</p>
         </div>
         <div>
-            <button @click="openAddModal = true" class="px-5 py-3 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white font-semibold rounded-2xl shadow-lg shadow-indigo-600/20 transition-all duration-150 flex items-center gap-2">
+            <button @click="resetAddBookForm(); openAddModal = true" class="px-5 py-3 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white font-semibold rounded-2xl shadow-lg shadow-indigo-600/20 transition-all duration-150 flex items-center gap-2">
                 <i class="fa-solid fa-plus"></i>
                 <span>Tambah Buku Baru</span>
             </button>
@@ -126,54 +126,119 @@
     <!-- MODAL: ADD BOOK -->
     <div class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 backdrop-blur-sm p-4" 
          x-show="openAddModal" x-transition x-cloak>
-        <div class="w-full max-w-xl bg-white dark:bg-slate-900 rounded-3xl shadow-xl border border-slate-200 dark:border-slate-800 overflow-hidden" 
+        <div class="w-full max-w-xl bg-white dark:bg-slate-900 rounded-3xl shadow-xl border border-slate-200 dark:border-slate-800 overflow-hidden max-h-[90vh] flex flex-col" 
              @click.away="openAddModal = false">
-            <div class="p-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
-                <h3 class="font-bold text-lg">Tambah Buku Baru</h3>
+            <div class="p-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center shrink-0">
+                <h3 class="font-bold text-lg flex items-center gap-2">
+                    <i class="fa-solid fa-book text-indigo-600"></i>
+                    <span>Tambah Buku Baru</span>
+                </h3>
                 <button @click="openAddModal = false" class="text-slate-400 hover:text-slate-500"><i class="fa-solid fa-xmark"></i></button>
             </div>
-            <form action="{{ route('perpus.buku.store') }}" method="POST" enctype="multipart/form-data" class="p-6 space-y-4">
+            <form action="{{ route('perpus.buku.store') }}" method="POST" enctype="multipart/form-data" class="p-6 space-y-4 overflow-y-auto">
                 @csrf
+
+                <!-- AI Vision OCR Banner & Trigger -->
+                <div class="p-4 bg-gradient-to-r from-indigo-500/10 via-purple-500/10 to-pink-500/10 border border-indigo-200 dark:border-indigo-800/50 rounded-2xl">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-purple-600 flex items-center justify-center text-white shadow-md shadow-indigo-500/20 shrink-0">
+                                <i class="fa-solid fa-wand-magic-sparkles text-lg"></i>
+                            </div>
+                            <div>
+                                <h4 class="text-xs font-bold text-slate-800 dark:text-slate-100 flex items-center gap-1.5">
+                                    <span>Isi Otomatis dengan AI Gemini</span>
+                                    <span class="px-2 py-0.5 bg-indigo-100 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400 text-[10px] rounded-full uppercase tracking-wider font-extrabold">Smart Scan</span>
+                                </h4>
+                                <p class="text-[11px] text-slate-500 dark:text-slate-400">Foto sampul atau halaman informasi buku untuk auto-fill form.</p>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label for="aiOcrFileInput" class="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white text-xs font-bold rounded-xl shadow-md shadow-indigo-600/20 transition-all flex items-center justify-center gap-2 cursor-pointer shrink-0 select-none">
+                                <i class="fa-solid fa-camera"></i>
+                                <span>Scan / Upload Foto</span>
+                            </label>
+                            <input type="file" id="aiOcrFileInput" accept="image/*" capture="environment" class="hidden" @change="handleOcrScan($event)">
+                        </div>
+                    </div>
+
+                    <!-- OCR Loading State -->
+                    <div x-show="isScanningOcr" x-transition class="mt-3 p-3 bg-white/90 dark:bg-slate-900/90 rounded-xl border border-indigo-100 dark:border-indigo-950 flex items-center gap-3 text-xs text-indigo-600 dark:text-indigo-400 font-semibold">
+                        <i class="fa-solid fa-circle-notch fa-spin text-base"></i>
+                        <span>AI Gemini sedang menganalisis foto & mengekstrak informasi buku...</span>
+                    </div>
+
+                    <!-- OCR Success Message -->
+                    <div x-show="ocrSuccessMessage && !isScanningOcr" x-transition class="mt-3 p-3 bg-emerald-50 dark:bg-emerald-950/40 rounded-xl border border-emerald-200 dark:border-emerald-900 text-xs text-emerald-700 dark:text-emerald-300 font-semibold flex items-center justify-between">
+                        <span class="flex items-center gap-2">
+                            <i class="fa-solid fa-circle-check text-emerald-500 text-sm"></i>
+                            <span x-text="ocrSuccessMessage"></span>
+                        </span>
+                        <button type="button" @click="ocrSuccessMessage = ''" class="text-emerald-500 hover:text-emerald-700"><i class="fa-solid fa-xmark"></i></button>
+                    </div>
+
+                    <!-- OCR Error Message -->
+                    <div x-show="ocrErrorMessage && !isScanningOcr" x-transition class="mt-3 p-3 bg-rose-50 dark:bg-rose-950/40 rounded-xl border border-rose-200 dark:border-rose-900 text-xs text-rose-700 dark:text-rose-300 font-semibold flex items-center justify-between">
+                        <span class="flex items-center gap-2">
+                            <i class="fa-solid fa-triangle-exclamation text-rose-500 text-sm"></i>
+                            <span x-text="ocrErrorMessage"></span>
+                        </span>
+                        <button type="button" @click="ocrErrorMessage = ''" class="text-rose-500 hover:text-rose-700"><i class="fa-solid fa-xmark"></i></button>
+                    </div>
+
+                    <!-- Image Preview Thumbnail -->
+                    <template x-if="ocrPreviewUrl">
+                        <div class="mt-3 flex items-center gap-3 p-2 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800">
+                            <img :src="ocrPreviewUrl" alt="Scan Preview" class="w-12 h-16 object-cover rounded-lg border border-slate-200 dark:border-slate-700">
+                            <div class="text-xs text-slate-500">
+                                <span class="font-bold text-slate-700 dark:text-slate-300">Foto Hasil Scan AI</span>
+                                <p class="text-[11px] text-slate-400">Foto ini otomatis diset sebagai Cover Buku.</p>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                         <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Kode Buku / ISBN</label>
-                        <input type="text" name="code" required class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:outline-none focus:border-indigo-600">
+                        <input type="text" name="code" required x-model="newBook.code" class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:outline-none focus:border-indigo-600">
                     </div>
                     <div>
                         <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Judul Buku</label>
-                        <input type="text" name="title" required class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:outline-none focus:border-indigo-600">
+                        <input type="text" name="title" required x-model="newBook.title" class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:outline-none focus:border-indigo-600">
                     </div>
                 </div>
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                         <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Penulis</label>
-                        <input type="text" name="author" class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:outline-none focus:border-indigo-600">
+                        <input type="text" name="author" x-model="newBook.author" class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:outline-none focus:border-indigo-600">
                     </div>
                     <div>
                         <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Penerbit</label>
-                        <input type="text" name="publisher" class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:outline-none focus:border-indigo-600">
+                        <input type="text" name="publisher" x-model="newBook.publisher" class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:outline-none focus:border-indigo-600">
                     </div>
                 </div>
 
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div>
                         <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Tahun Terbit</label>
-                        <input type="number" name="year" class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:outline-none focus:border-indigo-600">
+                        <input type="number" name="year" x-model="newBook.year" class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:outline-none focus:border-indigo-600">
                     </div>
                     <div>
                         <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Stok Awal</label>
-                        <input type="number" name="stock" min="1" required class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:outline-none focus:border-indigo-600">
+                        <input type="number" name="stock" min="1" required x-model="newBook.stock" class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:outline-none focus:border-indigo-600">
                     </div>
                     <div>
                         <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Lokasi Rak</label>
-                        <input type="text" name="location" placeholder="R-01" class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:outline-none focus:border-indigo-600">
+                        <input type="text" name="location" x-model="newBook.location" placeholder="R-01" class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:outline-none focus:border-indigo-600">
                     </div>
                 </div>
 
                 <div>
                     <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Cover Image (Opsional)</label>
-                    <input type="file" name="cover" class="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-600 hover:file:bg-indigo-100">
+                    <input type="file" id="addBookCoverInput" name="cover" class="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-600 hover:file:bg-indigo-100">
                 </div>
 
                 <div class="pt-4 flex justify-end gap-3 border-t border-slate-100 dark:border-slate-800">
@@ -687,7 +752,78 @@ document.addEventListener('alpine:init', () => {
     Alpine.data('bukuCatalog', () => ({
         openAddModal: false,
         openEditModal: false,
+        newBook: { code: '', title: '', author: '', publisher: '', year: '', stock: 1, location: '' },
         editBook: { id: '', code: '', title: '', author: '', publisher: '', year: '', stock: '', location: '', cover_url: '' },
+        
+        // AI Vision OCR States
+        isScanningOcr: false,
+        ocrErrorMessage: '',
+        ocrSuccessMessage: '',
+        ocrPreviewUrl: '',
+
+        resetAddBookForm() {
+            this.newBook = { code: '', title: '', author: '', publisher: '', year: '', stock: 1, location: '' };
+            this.isScanningOcr = false;
+            this.ocrErrorMessage = '';
+            this.ocrSuccessMessage = '';
+            this.ocrPreviewUrl = '';
+            const coverInput = document.getElementById('addBookCoverInput');
+            if (coverInput) coverInput.value = '';
+            const ocrInput = document.getElementById('aiOcrFileInput');
+            if (ocrInput) ocrInput.value = '';
+        },
+
+        handleOcrScan(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            this.isScanningOcr = true;
+            this.ocrErrorMessage = '';
+            this.ocrSuccessMessage = '';
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                this.ocrPreviewUrl = e.target.result;
+            };
+            reader.readAsDataURL(file);
+
+            const formData = new FormData();
+            formData.append('image', file);
+
+            fetch('{{ route('perpus.buku.scan-ocr') }}', {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                this.isScanningOcr = false;
+                if (data.success) {
+                    if (data.data.code) this.newBook.code = data.data.code;
+                    if (data.data.title) this.newBook.title = data.data.title;
+                    if (data.data.author) this.newBook.author = data.data.author;
+                    if (data.data.publisher) this.newBook.publisher = data.data.publisher;
+                    if (data.data.year) this.newBook.year = data.data.year;
+
+                    this.ocrSuccessMessage = 'Informasi buku berhasil diekstrak oleh AI Gemini!';
+
+                    const coverInput = document.getElementById('addBookCoverInput');
+                    if (coverInput) {
+                        const dt = new DataTransfer();
+                        dt.items.add(file);
+                        coverInput.files = dt.files;
+                    }
+                } else {
+                    this.ocrErrorMessage = data.message || 'Gagal memindai gambar buku dengan AI.';
+                }
+            })
+            .catch(err => {
+                this.isScanningOcr = false;
+                this.ocrErrorMessage = 'Terjadi kesalahan koneksi saat memproses scan AI.';
+            });
+        },
 
         // Delete confirmation
         openDeleteModal: false,

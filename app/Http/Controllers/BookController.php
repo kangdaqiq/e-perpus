@@ -152,4 +152,124 @@ class BookController extends Controller
 
         return redirect()->route('perpus.buku.index')->with('success', 'Buku berhasil dihapus.');
     }
+
+    /**
+     * Pindai sampul / halaman buku menggunakan AI Gemini Vision (OCR)
+     */
+    public function scanOcr(Request $request)
+    {
+        $request->validate([
+            'image' => 'required|image|mimes:jpeg,png,jpg,webp|max:10240',
+        ]);
+
+        $apiKey = config('services.gemini.api_key') ?: env('GEMINI_API_KEY');
+
+        if (!$apiKey) {
+            return response()->json([
+                'success' => false,
+                'message' => 'API Key Gemini (GEMINI_API_KEY) belum diatur di file .env. Silakan atur GEMINI_API_KEY terlebih dahulu.',
+            ], 422);
+        }
+
+        try {
+            $file = $request->file('image');
+            $mimeType = $file->getMimeType();
+            $base64Image = base64_encode(file_get_contents($file->getRealPath()));
+
+            $prompt = 'Analisis foto buku ini (sampul/cover atau halaman hak cipta). Ekstrak informasi berikut dalam format JSON murni tanpa markdown/penjelasan tambahan.
+Schema JSON yang wajib dipenuhi:
+{
+  "code": "string/null (ISBN atau Kode Buku jika terlihat)",
+  "title": "string/null (Judul Utama Buku)",
+  "author": "string/null (Nama Penulis/Pengarang)",
+  "publisher": "string/null (Nama Penerbit)",
+  "year": integer/null (Tahun Terbit 4 digit, contoh: 2023)
+}
+Jika salah satu bidang tidak ditemukan/kurang jelas, berikan nilai null.';
+
+            $model = config('services.gemini.model') ?: env('GEMINI_MODEL', 'gemini-1.5-flash');
+            $endpoint = "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key={$apiKey}";
+            
+            $response = \Illuminate\Support\Facades\Http::timeout(30)->post($endpoint, [
+                'contents' => [
+                    [
+                        'parts' => [
+                            ['text' => $prompt],
+                            [
+                                'inline_data' => [
+                                    'mime_type' => $mimeType,
+                                    'data' => $base64Image,
+                                ]
+                            ]
+                        ]
+                    ]
+                ],
+                'generationConfig' => [
+                    'response_mime_type' => 'application/json',
+                ],
+            ]);
+
+            if ($response->failed()) {
+                // Fallback attempt with gemini-1.5-flash
+                $fallbackEndpoint = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={$apiKey}";
+                $response = \Illuminate\Support\Facades\Http::timeout(30)->post($fallbackEndpoint, [
+                    'contents' => [
+                        [
+                            'parts' => [
+                                ['text' => $prompt],
+                                [
+                                    'inline_data' => [
+                                        'mime_type' => $mimeType,
+                                        'data' => $base64Image,
+                                    ]
+                                ]
+                            ]
+                        ]
+                    ],
+                    'generationConfig' => [
+                        'response_mime_type' => 'application/json',
+                    ],
+                ]);
+            }
+
+            if ($response->failed()) {
+                $errorMessage = $response->json('error.message') ?? 'Gagal memproses gambar dengan Gemini AI.';
+                return response()->json([
+                    'success' => false,
+                    'message' => $errorMessage,
+                ], 500);
+            }
+
+            $jsonText = $response->json('candidates.0.content.parts.0.text');
+            $data = json_decode($jsonText, true);
+
+            if (!is_array($data)) {
+                $cleanText = preg_replace('/^```(?:json)?\s*|\s*```$/i', '', trim($jsonText ?? ''));
+                $data = json_decode($cleanText, true);
+            }
+
+            if (!is_array($data)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Gagal membaca format JSON dari respons AI.',
+                ], 500);
+            }
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'code' => $data['code'] ?? null,
+                    'title' => $data['title'] ?? null,
+                    'author' => $data['author'] ?? null,
+                    'publisher' => $data['publisher'] ?? null,
+                    'year' => isset($data['year']) ? (int) $data['year'] : null,
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan sistem: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
 }

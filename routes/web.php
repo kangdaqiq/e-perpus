@@ -32,6 +32,7 @@ Route::middleware(['auth', 'school_active'])->group(function () {
     // Buku (Catalog)
     Route::get('/books', [BookController::class, 'index'])->name('perpus.buku.index');
     Route::post('/books', [BookController::class, 'store'])->name('perpus.buku.store');
+    Route::post('/books/scan-ocr', [BookController::class, 'scanOcr'])->name('perpus.buku.scan-ocr');
     Route::put('/books/{id}', [BookController::class, 'update'])->name('perpus.buku.update');
     Route::delete('/books/{id}', [BookController::class, 'destroy'])->name('perpus.buku.destroy');
 
