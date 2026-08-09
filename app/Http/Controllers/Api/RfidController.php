@@ -145,7 +145,7 @@ class RfidController extends Controller
                 Visit::create([
                     'school_id' => $device->school_id,
                     'member_id' => $member->id,
-                    'purpose' => 'Membaca / Meminjam Buku (Auto)',
+                    'purpose' => 'Membaca / Meminjam Buku',
                     'scanned_at' => now()
                 ]);
             }

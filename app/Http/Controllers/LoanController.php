@@ -303,7 +303,7 @@ class LoanController extends Controller
                 Visit::create([
                     'school_id' => $schoolId,
                     'member_id' => $visitingMemberId,
-                    'purpose' => 'Membaca / Meminjam Buku (Auto)',
+                    'purpose' => 'Membaca / Meminjam Buku',
                     'scanned_at' => now()
                 ]);
             }
@@ -475,7 +475,7 @@ class LoanController extends Controller
                 Visit::create([
                     'school_id' => $schoolId,
                     'member_id' => $visitingMemberId,
-                    'purpose' => 'Membaca / Meminjam Buku (Auto)',
+                    'purpose' => 'Membaca / Meminjam Buku',
                     'scanned_at' => now()
                 ]);
             }

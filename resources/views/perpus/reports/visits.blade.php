@@ -130,8 +130,7 @@
                     <th class="p-4">NIS / NIP</th>
                     <th class="p-4">Nama Pengunjung</th>
                     <th class="p-4">Kategori / Role</th>
-                    <th class="p-4">Kelas / Jurusan</th>
-                    <th class="p-4 pr-6">Keperluan</th>
+                    <th class="p-4 pr-6">Kelas / Jurusan</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-slate-100 dark:divide-slate-800 text-sm font-medium text-slate-700 dark:text-slate-300">
@@ -160,18 +159,15 @@
                                 <span class="px-2.5 py-1 bg-purple-100 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 text-xs rounded-full font-bold">Tamu Manual</span>
                             @endif
                         </td>
-                        <td class="p-4">
+                        <td class="p-4 pr-6">
                             <span class="px-2.5 py-1 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs rounded-lg font-semibold">
                                 {{ $visit->member ? ($visit->member->class_or_dept ?? '-') : ($visit->class_or_dept ?? '-') }}
                             </span>
                         </td>
-                        <td class="p-4 pr-6 text-slate-600 dark:text-slate-400">
-                            {{ $visit->purpose ?? 'Membaca / Belajar' }}
-                        </td>
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="7" class="p-12 text-center text-slate-400 font-medium">Tidak ada data kunjungan yang sesuai dengan filter.</td>
+                        <td colspan="6" class="p-12 text-center text-slate-400 font-medium">Tidak ada data kunjungan yang sesuai dengan filter.</td>
                     </tr>
                 @endforelse
             </tbody>

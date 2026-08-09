@@ -96,12 +96,11 @@
         <thead>
             <tr>
                 <th style="width: 5%; text-align: center;">No</th>
-                <th style="width: 15%;">Waktu Scan</th>
-                <th style="width: 15%;">NIS / NIP</th>
-                <th style="width: 25%;">Nama Pengunjung</th>
+                <th style="width: 18%;">Waktu Scan</th>
+                <th style="width: 17%;">NIS / NIP</th>
+                <th style="width: 30%;">Nama Pengunjung</th>
                 <th style="width: 15%;">Kategori</th>
-                <th style="width: 12%;">Kelas / Jurusan</th>
-                <th style="width: 13%;">Keperluan</th>
+                <th style="width: 15%;">Kelas / Jurusan</th>
             </tr>
         </thead>
         <tbody>
@@ -113,11 +112,10 @@
                     <td><strong>{{ $visit->member ? $visit->member->name : ($visit->visitor_name ?? 'Tamu') }}</strong></td>
                     <td>{{ $visit->member ? ($visit->member->source_type === 'siswa' ? 'Siswa' : 'Guru / Staf') : 'Tamu' }}</td>
                     <td>{{ $visit->member ? ($visit->member->class_or_dept ?? '-') : ($visit->class_or_dept ?? '-') }}</td>
-                    <td>{{ $visit->purpose ?? 'Membaca' }}</td>
                 </tr>
             @empty
                 <tr>
-                    <td colspan="7" style="text-align: center; padding: 20px; color: #94a3b8;">Tidak ada data kunjungan yang ditemukan.</td>
+                    <td colspan="6" style="text-align: center; padding: 20px; color: #94a3b8;">Tidak ada data kunjungan yang ditemukan.</td>
                 </tr>
             @endforelse
         </tbody>
