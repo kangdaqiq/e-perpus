@@ -109,7 +109,7 @@
                         <th class="p-5 text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">No</th>
                         <th class="p-5 text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Nama Anggota</th>
                         <th class="p-5 text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Tipe</th>
-                        <th class="p-5 text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">NIS / NIP</th>
+                        <th class="p-5 text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">NISN / NIP</th>
                         <th class="p-5 text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Kelas / Divisi</th>
                         <th class="p-5 text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">UID Kartu RFID</th>
                     </tr>

@@ -464,7 +464,7 @@
                 <!-- MANUAL MODE OPTIONS (REALTIME SEARCH DROP DOWN) -->
                 <div x-show="inputMode === 'manual'" class="space-y-4" x-cloak
                      x-data="{ openDropdown: false }">
-                    <p class="text-xs text-slate-400" x-text="borrowerType === 'guru' ? 'Pilih siswa yang ditugaskan untuk mengambil buku:' : 'Cari berdasarkan NIS/NIP, Kelas/Divisi, atau Nama:'"></p>
+                    <p class="text-xs text-slate-400" x-text="borrowerType === 'guru' ? 'Pilih siswa yang ditugaskan untuk mengambil buku:' : 'Cari berdasarkan NIS/NISN/NIP, Kelas/Divisi, atau Nama:'"></p>
                     
                     <div class="relative">
                         <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2" x-text="borrowerType === 'guru' ? 'Pilih Siswa (Pengambil Buku)' : 'Pilih Anggota Perpustakaan'"></label>
@@ -472,7 +472,7 @@
                         <!-- Trigger Selector text display -->
                         <div @click="openDropdown = !openDropdown" 
                              class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl text-sm focus:outline-none focus-within:border-indigo-600 font-semibold text-slate-800 dark:text-slate-200 flex justify-between items-center cursor-pointer select-none">
-                            <span x-text="selectedMemberId ? selectedMemberText : (borrowerType === 'guru' ? '-- Pilih Siswa Pengambil Buku --' : '-- Pilih Anggota (Cari NIS/NIP/Nama) --')"></span>
+                            <span x-text="selectedMemberId ? selectedMemberText : (borrowerType === 'guru' ? '-- Pilih Siswa Pengambil Buku --' : '-- Pilih Anggota (Cari NIS/NISN/NIP/Nama) --')"></span>
                             <i class="fa-solid fa-chevron-down text-xs text-slate-400 transition-transform" :class="openDropdown ? 'rotate-180' : ''"></i>
                         </div>
                         

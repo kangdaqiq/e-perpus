@@ -151,12 +151,12 @@
                         <td class="p-4">
                             @if($visit->member)
                                 @if($visit->member->source_type === 'siswa')
-                                    <span class="px-2.5 py-1 bg-emerald-100 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 text-xs rounded-full font-bold">Siswa</span>
+                                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-100 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300">Siswa</span>
                                 @else
-                                    <span class="px-2.5 py-1 bg-amber-100 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 text-xs rounded-full font-bold">Guru / Staf</span>
+                                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300" style="background-color: #fef3c7; color: #92400e;">Guru / Staf</span>
                                 @endif
                             @else
-                                <span class="px-2.5 py-1 bg-purple-100 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 text-xs rounded-full font-bold">Tamu Manual</span>
+                                <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-purple-100 text-purple-800 dark:bg-purple-950/40 dark:text-purple-300" style="background-color: #f3e8ff; color: #6b21a8;">Tamu Manual</span>
                             @endif
                         </td>
                         <td class="p-4 pr-6">

@@ -53,14 +53,7 @@
           }
       }">
 
-    <!-- Page Preloader -->
-    <div id="loader" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900 transition-opacity duration-300" 
-         x-data="{ show: true }" x-show="show" x-init="window.addEventListener('load', () => { setTimeout(() => show = false, 300) })">
-        <div class="relative w-16 h-16">
-            <div class="absolute inset-0 border-4 border-indigo-200 rounded-full"></div>
-            <div class="absolute inset-0 border-4 border-indigo-600 rounded-full animate-spin border-t-transparent"></div>
-        </div>
-    </div>
+
     <!-- Impersonation Sticky Banner -->
     @if(session()->has('impersonator_id'))
     <div class="bg-amber-400 dark:bg-amber-500 text-slate-950 px-4 py-2.5 flex items-center justify-between text-xs sm:text-sm font-bold shadow-md z-40 sticky top-0">
