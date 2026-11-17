@@ -772,7 +772,7 @@
                 <h3 class="text-lg font-bold text-slate-800 dark:text-slate-100 mb-2">Hapus Buku?</h3>
                 <p class="text-sm text-slate-500 dark:text-slate-400">
                     Anda akan menghapus buku<br>
-                    <strong class="text-slate-700 dark:text-slate-200" x-text="'\"' + deleteBookTitle + '\"'"></strong>
+                    <strong class="text-slate-700 dark:text-slate-200" x-text="'&quot;' + deleteBookTitle + '&quot;'"></strong>
                 </p>
                 <p class="text-xs text-rose-500 mt-2 font-medium">Tindakan ini tidak dapat dibatalkan.</p>
             </div>
@@ -801,7 +801,7 @@ document.addEventListener('alpine:init', () => {
     Alpine.data('bukuCatalog', () => ({
         openAddModal: {{ $errors->any() && old('_form') === 'add' ? 'true' : 'false' }},
         openEditModal: false,
-        newBook: { code: '{{ old('code') }}', title: '{{ old('title') }}', author: '{{ old('author') }}', publisher: '{{ old('publisher') }}', year: '{{ old('year') }}', stock: '{{ old('stock', 1) }}', location: '{{ old('location') }}' },
+        newBook: { code: @json(old('code', '')), title: @json(old('title', '')), author: @json(old('author', '')), publisher: @json(old('publisher', '')), year: @json(old('year', '')), stock: @json(old('stock', 1)), location: @json(old('location', '')) },
         editBook: { id: '', code: '', title: '', author: '', publisher: '', year: '', stock: '', location: '', cover_url: '' },
         
         // AI Vision OCR States
@@ -1024,7 +1024,7 @@ document.addEventListener('alpine:init', () => {
         defaultInputMode() {
             const saved = localStorage.getItem('perpus_loan_input_mode');
             if (saved === 'usb' || saved === 'rfid') return saved;
-            return {{ count($devices) > 0 ? "'rfid'" : "'usb'" }};
+            return @json(count($devices) > 0 ? 'rfid' : 'usb');
         },
 
         switchToUsbMode() {
