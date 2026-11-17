@@ -3,18 +3,82 @@
 @section('title', 'Buku Tamu Kunjungan')
 
 @section('content')
-<div x-data="{ openManualModal: false }">
+<div x-data="kunjunganPage()" @usb-rfid-scan.window="handleScan($event.detail.uid)">
     <!-- Header Page Actions -->
     <div class="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
             <h2 class="text-2xl font-bold text-slate-800 dark:text-slate-100">Buku Tamu</h2>
             <p class="text-sm text-slate-400">Log kehadiran pengunjung perpustakaan.</p>
         </div>
-        <div>
+        <div class="flex flex-wrap gap-3">
+            <button @click="toggleUsbPanel()" 
+                    class="px-5 py-3 font-semibold rounded-2xl transition-all duration-150 flex items-center gap-2 active:scale-95 border"
+                    :class="usbPanel ? 'bg-emerald-600 border-emerald-600 text-white shadow-lg shadow-emerald-600/20' : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 hover:border-emerald-500'">
+                <i class="fa-brands fa-usb"></i>
+                <span x-text="usbPanel ? 'Scanner USB Aktif' : 'Scan Kartu (USB)'"></span>
+            </button>
             <button @click="openManualModal = true" class="px-5 py-3 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white font-semibold rounded-2xl shadow-lg shadow-indigo-600/20 transition-all duration-150 flex items-center gap-2">
                 <i class="fa-solid fa-pen"></i>
                 <span>Catat Tamu Manual</span>
             </button>
+        </div>
+    </div>
+
+    <!-- USB RFID SCANNER PANEL -->
+    <div x-show="usbPanel" x-transition x-cloak
+         class="bg-white dark:bg-slate-900 border border-emerald-200 dark:border-emerald-900/50 p-6 rounded-3xl mb-6 shadow-sm grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="space-y-4">
+            <div class="flex items-center gap-3">
+                <div class="w-11 h-11 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 flex items-center justify-center text-lg">
+                    <i class="fa-solid fa-id-card-clip" :class="loading ? 'animate-pulse' : ''"></i>
+                </div>
+                <div>
+                    <h3 class="font-bold text-slate-800 dark:text-slate-100">Tap Kartu Kunjungan (Scanner USB)</h3>
+                    <p class="text-xs text-slate-400">Tempelkan kartu RFID anggota pada scanner USB untuk mencatat kunjungan.</p>
+                </div>
+            </div>
+
+            <input type="text" x-ref="usbVisitInput" data-rfid-capture autocomplete="off"
+                   :disabled="loading"
+                   @blur="keepFocus()"
+                   placeholder="Menunggu tap kartu..."
+                   class="w-full px-4 py-4 bg-emerald-50/50 dark:bg-emerald-950/20 border-2 border-dashed border-emerald-300 dark:border-emerald-800 rounded-2xl text-center text-base font-mono font-bold text-slate-800 dark:text-slate-200 focus:outline-none focus:border-emerald-600 focus:border-solid">
+
+            <!-- Last Result -->
+            <template x-if="lastResult">
+                <div class="p-4 rounded-2xl border flex items-center gap-3"
+                     :class="lastResult.ok ? (lastResult.duplicate ? 'bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-900/50 text-amber-700 dark:text-amber-400' : 'bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-900/50 text-emerald-700 dark:text-emerald-400') : 'bg-rose-50 dark:bg-rose-950/30 border-rose-200 dark:border-rose-900/50 text-rose-700 dark:text-rose-400'">
+                    <i class="text-2xl fa-solid" :class="lastResult.ok ? (lastResult.duplicate ? 'fa-clock-rotate-left' : 'fa-circle-check') : 'fa-circle-xmark'"></i>
+                    <div class="min-w-0">
+                        <p class="font-bold text-sm truncate" x-text="lastResult.name || 'Kartu Tidak Dikenal'"></p>
+                        <p class="text-xs" x-text="lastResult.message"></p>
+                    </div>
+                </div>
+            </template>
+        </div>
+
+        <!-- Recent scans (this session) -->
+        <div>
+            <div class="flex justify-between items-center mb-3">
+                <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Scan Terbaru (Sesi Ini)</span>
+                <a href="{{ route('perpus.kunjungan.index') }}" class="text-xs font-semibold text-indigo-600 hover:underline" x-show="recent.length > 0">
+                    <i class="fa-solid fa-rotate-right mr-1"></i>Muat Ulang Tabel
+                </a>
+            </div>
+            <div class="max-h-56 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800 text-sm">
+                <template x-for="(item, idx) in recent" :key="idx">
+                    <div class="py-2.5 flex justify-between items-center gap-3">
+                        <div class="min-w-0">
+                            <p class="font-bold text-slate-800 dark:text-slate-100 truncate" x-text="item.name"></p>
+                            <p class="text-xs text-slate-400" x-text="item.detail"></p>
+                        </div>
+                        <span class="text-xs font-mono font-bold text-slate-500 flex-shrink-0" x-text="item.time"></span>
+                    </div>
+                </template>
+                <div x-show="recent.length === 0" class="py-8 text-center text-xs text-slate-400">
+                    Belum ada kartu yang di-scan.
+                </div>
+            </div>
         </div>
     </div>
 
@@ -156,4 +220,86 @@
         </div>
     </div>
 </div>
+
+@push('scripts')
+<script>
+document.addEventListener('alpine:init', () => {
+    Alpine.data('kunjunganPage', () => ({
+        openManualModal: false,
+        usbPanel: localStorage.getItem('perpus_visit_usb_panel') === '1',
+        loading: false,
+        lastResult: null,
+        recent: [],
+
+        init() {
+            if (this.usbPanel) this.focusInput();
+        },
+
+        toggleUsbPanel() {
+            this.usbPanel = !this.usbPanel;
+            localStorage.setItem('perpus_visit_usb_panel', this.usbPanel ? '1' : '0');
+            if (this.usbPanel) this.focusInput();
+        },
+
+        focusInput() {
+            this.$nextTick(() => setTimeout(() => this.$refs.usbVisitInput && this.$refs.usbVisitInput.focus(), 50));
+        },
+
+        keepFocus() {
+            // Kembalikan fokus hanya jika pengguna tidak sedang memakai input lain
+            setTimeout(() => {
+                if (this.usbPanel && !this.openManualModal && document.activeElement === document.body) {
+                    this.focusInput();
+                }
+            }, 100);
+        },
+
+        handleScan(uid) {
+            if (!this.usbPanel || this.openManualModal || this.loading) return;
+            this.loading = true;
+
+            fetch('{{ route('perpus.rfid.usb.visit') }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({ uid })
+            })
+            .then(res => res.json())
+            .then(data => {
+                this.loading = false;
+                if (data.success) {
+                    UsbRfid.beep(true);
+                    this.lastResult = {
+                        ok: true,
+                        duplicate: data.duplicate,
+                        name: data.member.name,
+                        message: data.message
+                    };
+                    if (!data.duplicate) {
+                        this.recent.unshift({
+                            name: data.member.name,
+                            detail: (data.member.class_or_dept || '-') + ' • ' + (data.member.code || '-'),
+                            time: data.scanned_at
+                        });
+                    }
+                } else {
+                    UsbRfid.beep(false);
+                    this.lastResult = { ok: false, name: '', message: data.message || 'Kartu tidak dikenali.' };
+                }
+                this.focusInput();
+            })
+            .catch(() => {
+                this.loading = false;
+                UsbRfid.beep(false);
+                this.lastResult = { ok: false, name: '', message: 'Koneksi jaringan error.' };
+                this.focusInput();
+            });
+        }
+    }));
+});
+</script>
+@endpush
 @endsection

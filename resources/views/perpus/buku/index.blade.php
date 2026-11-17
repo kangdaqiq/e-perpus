@@ -3,7 +3,7 @@
 @section('title', 'Katalog Buku')
 
 @section('content')
-<div x-data="bukuCatalog()">
+<div x-data="bukuCatalog()" @usb-rfid-scan.window="handleUsbScan($event.detail.uid)">
     <!-- Header Page Actions -->
     <div class="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
@@ -427,10 +427,15 @@
 
                 <!-- Input Mode Toggle -->
                 <div class="flex bg-slate-100 dark:bg-slate-950 p-1.5 rounded-2xl">
-                    <button type="button" @click="inputMode = 'rfid'" 
+                    <button type="button" @click="inputMode = 'rfid'; localStorage.setItem('perpus_loan_input_mode', 'rfid')" 
                             class="flex-1 py-2.5 text-xs font-bold rounded-xl transition-all"
                             :class="inputMode === 'rfid' ? 'bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-sm' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'">
                         <i class="fa-solid fa-id-card-clip mr-1.5"></i> Scan Kartu RFID
+                    </button>
+                    <button type="button" @click="switchToUsbMode()" 
+                            class="flex-1 py-2.5 text-xs font-bold rounded-xl transition-all"
+                            :class="inputMode === 'usb' ? 'bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-sm' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'">
+                        <i class="fa-brands fa-usb mr-1.5"></i> Scanner USB
                     </button>
                     <button type="button" @click="inputMode = 'manual'" 
                             class="flex-1 py-2.5 text-xs font-bold rounded-xl transition-all"
@@ -458,6 +463,31 @@
                     <div x-show="borrowerType === 'guru'" class="p-3 bg-indigo-50/70 dark:bg-indigo-950/40 border border-indigo-100 dark:border-indigo-900/50 rounded-2xl text-xs text-indigo-700 dark:text-indigo-300 flex items-center gap-2.5">
                         <i class="fa-solid fa-circle-info text-indigo-500 text-sm"></i>
                         <span>Verifikasi dilakukan dengan memindai <strong>kartu RFID milik Siswa</strong> yang ditugaskan untuk mengambil buku.</span>
+                    </div>
+                </div>
+
+                <!-- USB SCANNER MODE OPTIONS -->
+                <div x-show="inputMode === 'usb'" class="space-y-3" x-cloak>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-400" x-text="borrowerType === 'guru' ? 'Scan Kartu Siswa (Pengambil Buku)' : 'Scan Kartu Anggota'"></label>
+                    <div class="relative">
+                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-indigo-500">
+                            <i class="fa-solid fa-id-card-clip" :class="usbLoading ? 'animate-pulse' : ''"></i>
+                        </span>
+                        <input type="text" x-ref="usbLoanInput" data-rfid-capture autocomplete="off"
+                               :disabled="usbLoading"
+                               placeholder="Tempelkan kartu pada scanner USB..."
+                               class="w-full pl-11 pr-4 py-3 bg-indigo-50/50 dark:bg-indigo-950/20 border-2 border-dashed border-indigo-300 dark:border-indigo-800 rounded-2xl text-sm font-mono font-semibold text-slate-800 dark:text-slate-200 focus:outline-none focus:border-indigo-600 focus:border-solid">
+                    </div>
+                    <p class="text-[11px] text-slate-400 flex items-center gap-1.5">
+                        <i class="fa-solid fa-circle-info"></i>
+                        <span>Pastikan kolom di atas aktif (berkedip), lalu tempelkan kartu. UID juga dapat diketik manual lalu tekan Enter.</span>
+                    </p>
+                    <div x-show="usbLoading" class="text-xs font-semibold text-indigo-600 flex items-center gap-2">
+                        <i class="fa-solid fa-spinner animate-spin"></i> Mencari data anggota...
+                    </div>
+                    <div x-show="usbError" x-transition class="p-3 bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-900/50 rounded-2xl text-xs font-semibold text-rose-600 dark:text-rose-400 flex items-center gap-2">
+                        <i class="fa-solid fa-circle-exclamation"></i>
+                        <span x-text="usbError"></span>
                     </div>
                 </div>
 
@@ -720,6 +750,11 @@
                             class="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-sm shadow-lg shadow-indigo-600/20">
                         Coba Ulang Manual
                     </button>
+                    <!-- USB retry -->
+                    <button type="button" @click="step = 'input'; switchToUsbMode()" x-show="inputMode === 'usb'"
+                            class="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-sm shadow-lg shadow-indigo-600/20">
+                        Scan Ulang Kartu
+                    </button>
                 </div>
             </div>
         </div>
@@ -926,7 +961,9 @@ document.addEventListener('alpine:init', () => {
         memberName: '',
         totalBooks: 0,
         errorMessage: '',
-        inputMode: 'rfid', // 'rfid', 'manual'
+        inputMode: 'rfid', // 'rfid', 'manual', 'usb'
+        usbLoading: false,
+        usbError: '',
         borrowerType: 'siswa', // 'siswa', 'guru'
         selectedTeacherId: '',
         selectedTeacherText: '',
@@ -982,6 +1019,80 @@ document.addEventListener('alpine:init', () => {
             this.loanBook = { ...book };
             this.openLoanModal = true;
             this.resetForm();
+        },
+
+        defaultInputMode() {
+            const saved = localStorage.getItem('perpus_loan_input_mode');
+            if (saved === 'usb' || saved === 'rfid') return saved;
+            return {{ count($devices) > 0 ? "'rfid'" : "'usb'" }};
+        },
+
+        switchToUsbMode() {
+            this.inputMode = 'usb';
+            this.usbError = '';
+            localStorage.setItem('perpus_loan_input_mode', 'usb');
+            this.$nextTick(() => setTimeout(() => this.$refs.usbLoanInput && this.$refs.usbLoanInput.focus(), 50));
+        },
+
+        handleUsbScan(uid) {
+            // Hanya proses jika modal pinjam terbuka dalam mode USB di langkah input
+            if (!this.openLoanModal || this.step !== 'input' || this.inputMode !== 'usb' || this.usbLoading) return;
+
+            const quantity = parseInt(this.qty);
+            if (isNaN(quantity) || quantity < 1 || quantity > this.loanBook.sisa_stok) {
+                this.usbError = 'Jumlah pinjam tidak valid (stok tersedia: ' + this.loanBook.sisa_stok + ').';
+                UsbRfid.beep(false);
+                return;
+            }
+            if (this.borrowerType === 'guru' && !this.selectedTeacherId) {
+                this.usbError = 'Pilih Guru (Peminjam Utama) terlebih dahulu sebelum scan kartu siswa.';
+                UsbRfid.beep(false);
+                return;
+            }
+
+            this.usbLoading = true;
+            this.usbError = '';
+
+            UsbRfid.lookup(uid)
+                .then(data => {
+                    this.usbLoading = false;
+                    if (!data.success) {
+                        this.usbError = data.message || 'Kartu tidak dikenali.';
+                        UsbRfid.beep(false);
+                        this.$nextTick(() => this.$refs.usbLoanInput && this.$refs.usbLoanInput.focus());
+                        return;
+                    }
+
+                    const mb = data.member;
+                    UsbRfid.beep(true);
+                    this.selectedMemberId = mb.id;
+                    this.selectedMemberText = mb.name;
+                    this.scannedMember = {
+                        id: mb.id,
+                        name: mb.name,
+                        code: mb.code,
+                        class_or_dept: mb.class_or_dept
+                    };
+
+                    if (this.borrowerType === 'guru') {
+                        const teacher = this.members.find(m => m.id == this.selectedTeacherId);
+                        if (teacher) {
+                            this.teacherInfo = {
+                                id: teacher.id,
+                                name: teacher.name,
+                                code: teacher.code,
+                                class_or_dept: teacher.class_or_dept
+                            };
+                        }
+                    }
+
+                    this.step = 'confirm';
+                })
+                .catch(() => {
+                    this.usbLoading = false;
+                    this.usbError = 'Koneksi jaringan error.';
+                    UsbRfid.beep(false);
+                });
         },
 
         startVerification() {
@@ -1221,7 +1332,9 @@ document.addEventListener('alpine:init', () => {
             this.step = 'input';
             this.pendingId = null;
             this.errorMessage = '';
-            this.inputMode = 'rfid';
+            this.inputMode = this.defaultInputMode();
+            this.usbLoading = false;
+            this.usbError = '';
             this.borrowerType = 'siswa';
             this.selectedTeacherId = '';
             this.selectedTeacherText = '';
@@ -1235,6 +1348,7 @@ document.addEventListener('alpine:init', () => {
             this.dueDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
             this.scannedMember = { id: null, name: '', code: '', class_or_dept: '' };
             this.qty = 1;
+            if (this.inputMode === 'usb' && this.openLoanModal) this.switchToUsbMode();
         },
 
         closeLoanModal() {

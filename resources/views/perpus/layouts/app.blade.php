@@ -245,6 +245,112 @@
             </main>
         </div>
     </div>
+
+    <!-- Dukungan Scanner RFID USB (Keyboard Emulator / HID) -->
+    <script>
+    /**
+     * Scanner RFID USB bekerja seperti keyboard: mengetik UID kartu dengan sangat cepat
+     * lalu menekan Enter. Helper ini mendeteksi pola tersebut dan memicu event global:
+     *
+     *   window -> 'usb-rfid-scan'  (event.detail.uid = UID hasil scan)
+     *
+     * Dua cara penangkapan:
+     *  1. Input khusus dengan atribut [data-rfid-capture] -> nilai input dikirim saat Enter
+     *     (juga mendukung pengetikan UID secara manual).
+     *  2. Tanpa fokus pada input apa pun -> ketikan cepat (< 50ms/karakter) diakhiri Enter
+     *     dianggap sebagai hasil scan.
+     */
+    (function () {
+        const MAX_INTERVAL = 50;   // ms antar karakter (manusia biasanya > 80ms)
+        const MIN_LENGTH = 4;
+        let buffer = '';
+        let lastTime = 0;
+
+        function isEditable(el) {
+            if (!el) return false;
+            const tag = (el.tagName || '').toLowerCase();
+            return el.isContentEditable || tag === 'input' || tag === 'textarea' || tag === 'select';
+        }
+
+        function emit(uid, source) {
+            uid = String(uid || '').trim();
+            if (uid.length < MIN_LENGTH) return false;
+            window.dispatchEvent(new CustomEvent('usb-rfid-scan', { detail: { uid, source } }));
+            return true;
+        }
+
+        document.addEventListener('keydown', function (e) {
+            const target = e.target;
+
+            // 1. Input khusus penangkap RFID
+            if (target && target.hasAttribute && target.hasAttribute('data-rfid-capture')) {
+                if (e.key === 'Enter' || e.key === 'Tab') {
+                    e.preventDefault();
+                    if (emit(target.value, 'input')) {
+                        target.value = '';
+                        target.dispatchEvent(new Event('input', { bubbles: true }));
+                    }
+                }
+                return;
+            }
+
+            // Jangan ganggu pengetikan di input lain
+            if (isEditable(target) || e.ctrlKey || e.altKey || e.metaKey) {
+                buffer = '';
+                return;
+            }
+
+            // 2. Deteksi global (tanpa fokus)
+            const now = Date.now();
+            if (e.key === 'Enter' || e.key === 'Tab') {
+                if (buffer.length >= MIN_LENGTH && (now - lastTime) <= MAX_INTERVAL * 4) {
+                    e.preventDefault();
+                    emit(buffer, 'global');
+                }
+                buffer = '';
+                return;
+            }
+
+            if (e.key && e.key.length === 1) {
+                if (now - lastTime > MAX_INTERVAL) buffer = '';
+                buffer += e.key;
+                lastTime = now;
+            }
+        }, true);
+
+        // Bunyi beep singkat sebagai umpan balik scan (sukses / gagal)
+        window.UsbRfid = {
+            beep(ok = true) {
+                try {
+                    const Ctx = window.AudioContext || window.webkitAudioContext;
+                    if (!Ctx) return;
+                    const ctx = new Ctx();
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.type = 'square';
+                    osc.frequency.value = ok ? 1200 : 300;
+                    gain.gain.value = 0.05;
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.start();
+                    osc.stop(ctx.currentTime + (ok ? 0.12 : 0.35));
+                    osc.onended = () => ctx.close();
+                } catch (err) { /* abaikan */ }
+            },
+            lookup(uid, withLoans = false) {
+                return fetch('{{ route('perpus.rfid.usb.lookup') }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                    },
+                    body: JSON.stringify({ uid, with_loans: withLoans })
+                }).then(res => res.json());
+            }
+        };
+    })();
+    </script>
     @stack('scripts')
 </body>
 </html>

@@ -16,6 +16,21 @@ class Member extends Model
         'rfid_uid',
     ];
 
+    /**
+     * Cari anggota berdasarkan UID kartu RFID dengan toleransi format
+     * (HEX / desimal, big-endian / little-endian) - mendukung scanner USB.
+     */
+    public function scopeWhereRfidUid($query, ?string $rawUid)
+    {
+        $candidates = \App\Support\RfidUid::candidates($rawUid);
+
+        if (empty($candidates)) {
+            return $query->whereRaw('1 = 0');
+        }
+
+        return $query->whereNotNull('rfid_uid')->whereIn('rfid_uid', $candidates);
+    }
+
     public function school()
     {
         return $this->belongsTo(School::class);

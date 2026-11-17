@@ -11,6 +11,7 @@ use App\Http\Controllers\SyncController;
 use App\Http\Controllers\Api\RfidController;
 use App\Http\Controllers\MemberController;
 use App\Http\Controllers\AssistantAdminController;
+use App\Http\Controllers\UsbRfidController;
 
 // Guest Routes
 Route::middleware('guest')->group(function () {
@@ -56,6 +57,10 @@ Route::middleware(['auth', 'school_active'])->group(function () {
     Route::post('/devices', [DeviceController::class, 'store'])->name('perpus.device.store');
     Route::put('/devices/{id}', [DeviceController::class, 'update'])->name('perpus.device.update');
     Route::delete('/devices/{id}', [DeviceController::class, 'destroy'])->name('perpus.device.destroy');
+
+    // Scanner RFID USB (Keyboard Emulator / HID)
+    Route::post('/rfid/usb/lookup', [UsbRfidController::class, 'lookup'])->name('perpus.rfid.usb.lookup');
+    Route::post('/rfid/usb/visit', [UsbRfidController::class, 'visit'])->name('perpus.rfid.usb.visit');
 
     // Member Management (Siswa & Guru)
     Route::get('/members', [MemberController::class, 'index'])->name('perpus.member.index');

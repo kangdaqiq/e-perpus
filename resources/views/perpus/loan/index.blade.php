@@ -3,7 +3,7 @@
 @section('title', 'Daftar Peminjaman Buku')
 
 @section('content')
-<div x-data="loanTransactions()">
+<div x-data="loanTransactions()" @usb-rfid-scan.window="handleUsbReturnScan($event.detail.uid)">
     <!-- Header Page Actions -->
     <div class="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
@@ -172,7 +172,39 @@
 
             <!-- STEP 1: SELECT DEVICE -->
             <div class="p-6 space-y-6" x-show="returnScanStep === 'select_device'">
-                <div class="space-y-2">
+                <!-- Scanner Mode Toggle -->
+                <div class="flex bg-slate-100 dark:bg-slate-950 p-1.5 rounded-2xl">
+                    <button type="button" @click="setReturnScanMode('network')"
+                            class="flex-1 py-2.5 text-xs font-bold rounded-xl transition-all"
+                            :class="returnScanMode === 'network' ? 'bg-white dark:bg-slate-900 text-emerald-600 dark:text-emerald-400 shadow-sm' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'">
+                        <i class="fa-solid fa-wifi mr-1.5"></i> Scanner Jaringan
+                    </button>
+                    <button type="button" @click="setReturnScanMode('usb')"
+                            class="flex-1 py-2.5 text-xs font-bold rounded-xl transition-all"
+                            :class="returnScanMode === 'usb' ? 'bg-white dark:bg-slate-900 text-emerald-600 dark:text-emerald-400 shadow-sm' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'">
+                        <i class="fa-brands fa-usb mr-1.5"></i> Scanner USB
+                    </button>
+                </div>
+
+                <!-- USB Scanner Capture -->
+                <div class="space-y-3" x-show="returnScanMode === 'usb'" x-cloak>
+                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider">Scan Kartu Anggota</label>
+                    <div class="relative">
+                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-emerald-500">
+                            <i class="fa-solid fa-id-card-clip" :class="returnScanUsbLoading ? 'animate-pulse' : ''"></i>
+                        </span>
+                        <input type="text" x-ref="usbReturnInput" data-rfid-capture autocomplete="off"
+                               :disabled="returnScanUsbLoading"
+                               placeholder="Tempelkan kartu pada scanner USB..."
+                               class="w-full pl-11 pr-4 py-3 bg-emerald-50/50 dark:bg-emerald-950/20 border-2 border-dashed border-emerald-300 dark:border-emerald-800 rounded-2xl text-sm font-mono font-semibold text-slate-800 dark:text-slate-200 focus:outline-none focus:border-emerald-600 focus:border-solid">
+                    </div>
+                    <p class="text-[11px] text-slate-400">Pastikan kolom di atas aktif, lalu tempelkan kartu RFID siswa/guru pada scanner USB yang terhubung ke komputer ini.</p>
+                    <div x-show="returnScanUsbLoading" class="text-xs font-semibold text-emerald-600 flex items-center gap-2">
+                        <i class="fa-solid fa-spinner animate-spin"></i> Mencari data pinjaman...
+                    </div>
+                </div>
+
+                <div class="space-y-2" x-show="returnScanMode === 'network'">
                     <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider">Perangkat Scanner RFID</label>
                     <select x-model="returnScanDeviceId" 
                             class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl text-sm focus:outline-none focus:border-emerald-600">
@@ -189,7 +221,7 @@
                             class="px-5 py-2.5 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 font-bold rounded-2xl text-xs hover:bg-slate-100 dark:hover:bg-slate-800">
                         Batal
                     </button>
-                    <button type="button" @click="startReturnScan()" 
+                    <button type="button" @click="startReturnScan()" x-show="returnScanMode === 'network'"
                             class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-2xl text-xs shadow-lg shadow-emerald-600/20 flex items-center gap-1.5">
                         <i class="fa-solid fa-id-card-clip"></i>
                         <span>Mulai Scan Kartu</span>
@@ -287,7 +319,7 @@
                     <button type="button" @click="resetReturnScanForm()" class="px-5 py-2 border border-slate-200 dark:border-slate-800 font-bold rounded-2xl text-xs hover:bg-slate-50 dark:hover:bg-rose-950/20">
                         Kembali / Batal
                     </button>
-                    <button type="button" @click="startReturnScan()"
+                    <button type="button" @click="returnScanMode === 'usb' ? resetReturnScanForm() : startReturnScan()"
                             class="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-2xl text-xs shadow-lg shadow-emerald-600/20">
                         Coba Ulang Scan
                     </button>
@@ -415,6 +447,45 @@ document.addEventListener('alpine:init', () => {
         returnScanMemberName: '',
         returnScanLoans: [],
         returnScanErrorMessage: '',
+        returnScanMode: (localStorage.getItem('perpus_loan_input_mode') === 'usb' || {{ count($devices) === 0 ? 'true' : 'false' }}) ? 'usb' : 'network',
+        returnScanUsbLoading: false,
+
+        setReturnScanMode(mode) {
+            this.returnScanMode = mode;
+            localStorage.setItem('perpus_loan_input_mode', mode === 'usb' ? 'usb' : 'rfid');
+            if (mode === 'usb') {
+                this.$nextTick(() => setTimeout(() => this.$refs.usbReturnInput && this.$refs.usbReturnInput.focus(), 50));
+            }
+        },
+
+        handleUsbReturnScan(uid) {
+            if (!this.openReturnScanModal || this.returnScanMode !== 'usb' || this.returnScanUsbLoading) return;
+            if (!['select_device', 'loan_list', 'failed'].includes(this.returnScanStep)) return;
+
+            this.returnScanUsbLoading = true;
+            this.returnScanErrorMessage = '';
+
+            UsbRfid.lookup(uid, true)
+                .then(data => {
+                    this.returnScanUsbLoading = false;
+                    if (data.success) {
+                        UsbRfid.beep(true);
+                        this.returnScanMemberName = data.member.name;
+                        this.returnScanLoans = data.loans || [];
+                        this.returnScanStep = 'loan_list';
+                    } else {
+                        UsbRfid.beep(false);
+                        this.returnScanErrorMessage = data.message || 'Kartu tidak dikenali.';
+                        this.returnScanStep = 'failed';
+                    }
+                })
+                .catch(() => {
+                    this.returnScanUsbLoading = false;
+                    UsbRfid.beep(false);
+                    this.returnScanErrorMessage = 'Koneksi jaringan error.';
+                    this.returnScanStep = 'failed';
+                });
+        },
 
         triggerReturn(loan) {
             this.selectedLoan = { ...loan };
@@ -453,6 +524,8 @@ document.addEventListener('alpine:init', () => {
             this.returnScanErrorMessage = '';
             this.returnScanMemberName = '';
             this.returnScanLoans = [];
+            this.returnScanUsbLoading = false;
+            if (this.returnScanMode === 'usb') this.setReturnScanMode('usb');
         },
 
         closeReturnScanModal() {

@@ -37,7 +37,56 @@
         </div>
     </div>
 
-
+    <!-- USB RFID SCANNER TESTER -->
+    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 mb-6 shadow-sm"
+         x-data="{
+            result: null, loading: false,
+            test(uid) {
+                this.loading = true;
+                UsbRfid.lookup(uid).then(d => {
+                    this.loading = false;
+                    this.result = { raw: uid, ...d };
+                    UsbRfid.beep(!!d.success);
+                }).catch(() => { this.loading = false; this.result = { raw: uid, success: false, message: 'Koneksi jaringan error.' }; });
+            }
+         }"
+         @usb-rfid-scan.window="test($event.detail.uid)">
+        <div class="flex flex-col lg:flex-row gap-6">
+            <div class="lg:w-1/2 space-y-3">
+                <h3 class="font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                    <i class="fa-brands fa-usb text-emerald-600"></i> Scanner RFID USB (Plug &amp; Play)
+                </h3>
+                <p class="text-xs text-slate-400 leading-relaxed">
+                    Scanner USB tipe <strong>keyboard emulator (HID)</strong> tidak perlu didaftarkan. Cukup colokkan ke komputer pustakawan, lalu pilih mode
+                    <strong>"Scanner USB"</strong> saat Pinjam Buku, Kembalikan Buku, atau Buku Tamu. Format UID desimal maupun HEX dikenali otomatis.
+                </p>
+                <input type="text" x-ref="usbTestInput" data-rfid-capture autocomplete="off" :disabled="loading"
+                       placeholder="Klik di sini lalu tempelkan kartu untuk tes..."
+                       class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-2xl text-sm font-mono font-semibold focus:outline-none focus:border-emerald-600 focus:border-solid">
+            </div>
+            <div class="lg:w-1/2">
+                <div x-show="!result" class="h-full min-h-[96px] flex items-center justify-center text-xs text-slate-400 border border-dashed border-slate-200 dark:border-slate-800 rounded-2xl p-4 text-center">
+                    Hasil tes scan akan tampil di sini.
+                </div>
+                <template x-if="result">
+                    <div class="p-4 rounded-2xl border text-xs space-y-1.5"
+                         :class="result.success ? 'bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-900/50' : 'bg-rose-50 dark:bg-rose-950/30 border-rose-200 dark:border-rose-900/50'">
+                        <div class="flex justify-between"><span class="text-slate-500">Data diterima</span><span class="font-mono font-bold" x-text="result.raw"></span></div>
+                        <template x-if="result.success">
+                            <div class="space-y-1.5">
+                                <div class="flex justify-between"><span class="text-slate-500">Anggota</span><span class="font-bold text-emerald-700 dark:text-emerald-400" x-text="result.member.name"></span></div>
+                                <div class="flex justify-between"><span class="text-slate-500">Kelas / Divisi</span><span class="font-semibold" x-text="result.member.class_or_dept"></span></div>
+                                <div class="flex justify-between"><span class="text-slate-500">UID tersimpan</span><span class="font-mono font-semibold" x-text="result.member.rfid_uid"></span></div>
+                            </div>
+                        </template>
+                        <template x-if="!result.success">
+                            <p class="font-bold text-rose-600 dark:text-rose-400" x-text="result.message"></p>
+                        </template>
+                    </div>
+                </template>
+            </div>
+        </div>
+    </div>
 
     <!-- Data Table -->
     <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl overflow-hidden shadow-sm">
