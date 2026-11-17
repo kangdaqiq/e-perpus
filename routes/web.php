@@ -9,6 +9,7 @@ use App\Http\Controllers\LoanController;
 use App\Http\Controllers\DeviceController;
 use App\Http\Controllers\SyncController;
 use App\Http\Controllers\Api\RfidController;
+use App\Http\Controllers\Api\MobileLibraryController;
 use App\Http\Controllers\MemberController;
 use App\Http\Controllers\AssistantAdminController;
 use App\Http\Controllers\UsbRfidController;
@@ -103,3 +104,13 @@ Route::middleware(['auth', 'superadmin'])->group(function () {
 
 // API endpoint (Tanpa CSRF karena sudah di-exclude di bootstrap/app.php)
 Route::post('/api/rfid', [RfidController::class, 'handle']);
+
+// Mobile & PWA Perpustakaan API Endpoints
+Route::options('/api/mobile/{any}', [MobileLibraryController::class, 'options'])->where('any', '.*');
+Route::get('/api/mobile/perpustakaan', [MobileLibraryController::class, 'myLibrary']);
+Route::get('/api/mobile/perpustakaan/my', [MobileLibraryController::class, 'myLibrary']);
+Route::get('/api/mobile/student/perpustakaan', [MobileLibraryController::class, 'myLibrary']);
+Route::get('/api/mobile/siswa/perpustakaan', [MobileLibraryController::class, 'myLibrary']);
+Route::get('/api/mobile/guru/perpustakaan', [MobileLibraryController::class, 'myLibrary']);
+Route::get('/api/mobile/teacher/perpustakaan', [MobileLibraryController::class, 'myLibrary']);
+

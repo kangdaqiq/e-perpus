@@ -27,9 +27,9 @@ return Application::configure(basePath: dirname(__DIR__))
                      Request::HEADER_X_FORWARDED_PREFIX
         );
 
-        // Kecualikan endpoint RFID dari verifikasi CSRF
+        // Kecualikan endpoint API dari verifikasi CSRF
         $middleware->validateCsrfTokens(except: [
-            'api/rfid',
+            'api/*',
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
