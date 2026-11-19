@@ -73,4 +73,16 @@ class VisitController extends Controller
 
         return redirect()->route('perpus.kunjungan.index')->with('success', 'Kunjungan manual berhasil dicatat.');
     }
+
+    /**
+     * Hapus data kunjungan perpustakaan.
+     */
+    public function destroy($id)
+    {
+        $schoolId = auth()->user()->school_id;
+        $visit = Visit::where('school_id', $schoolId)->findOrFail($id);
+        $visit->delete();
+
+        return redirect()->back()->with('success', 'Data kunjungan berhasil dihapus.');
+    }
 }

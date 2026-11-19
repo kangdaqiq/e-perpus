@@ -41,6 +41,7 @@ Route::middleware(['auth', 'school_active'])->group(function () {
     // Kunjungan (Visits)
     Route::get('/visits', [VisitController::class, 'index'])->name('perpus.kunjungan.index');
     Route::post('/visits', [VisitController::class, 'store'])->name('perpus.kunjungan.store');
+    Route::delete('/visits/{id}', [VisitController::class, 'destroy'])->name('perpus.kunjungan.destroy');
 
     // Peminjaman (Loans)
     Route::get('/loans', [LoanController::class, 'index'])->name('perpus.loan.index');

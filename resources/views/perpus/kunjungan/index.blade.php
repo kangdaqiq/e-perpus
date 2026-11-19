@@ -122,6 +122,7 @@
                         <th class="p-6">Tanggal - Jam</th>
                         <th class="p-6">Nama Pengunjung</th>
                         <th class="p-6">Kelas / Divisi</th>
+                        <th class="p-6 text-right">Aksi</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100 dark:divide-slate-800 text-sm font-medium text-slate-700 dark:text-slate-300">
@@ -141,10 +142,20 @@
                             <td class="p-6 text-slate-500">
                                 {{ $visit->member->class_or_dept ?? $visit->class_or_dept ?? '-' }}
                             </td>
+                            <td class="p-6 text-right">
+                                <form action="{{ route('perpus.kunjungan.destroy', $visit->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Hapus data kunjungan ini?')">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" title="Hapus Kunjungan"
+                                            class="w-9 h-9 rounded-xl border border-slate-200 dark:border-slate-800 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/20 inline-flex items-center justify-center transition-colors">
+                                        <i class="fa-solid fa-trash-can"></i>
+                                    </button>
+                                </form>
+                            </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="3" class="p-12 text-center text-slate-400 font-medium">Tidak ada log kunjungan untuk tanggal filter ini.</td>
+                            <td colspan="4" class="p-12 text-center text-slate-400 font-medium">Tidak ada log kunjungan untuk tanggal filter ini.</td>
                         </tr>
                     @endforelse
                 </tbody>
